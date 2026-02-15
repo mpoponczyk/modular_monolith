@@ -1,64 +1,57 @@
 /**
- * Main Admin Page Component
+ * Root Admin Handler
  * 
- * Orchestrates:
- * 1. Route Resolution
- * 2. Module Activation Check
- * 3. RBAC Check
- * 4. Component Rendering
+ * Handles /admin and /admin/non-canonical-routes
+ * 
+ * Logic:
+ * 1. Try Implicit Resolution (Cookie/Header/SingleTenant).
+ * 2. If resolved -> Redirect to Canonical URL (/admin/t/[slug]).
+ * 3. If not -> Redirect Login or Show 404 (Fail Closed).
  */
 
-import { resolveRoute } from '@/core/router';
-import { isModuleActive } from '@/core/activation';
-import { canAccessModule } from '@/core/rbac';
-import { ComponentType } from 'react';
-import { notFound } from 'next/navigation';
+import { resolveAuthContext } from '@/core/context/resolveAuthContext';
+import { redirect, notFound } from 'next/navigation';
 
-// Mock Contexts (These will be replaced by real hooks/providers later)
-// For now, we assume a default context for the skeleton.
-const mockTenantContext = {
-    activeModuleIds: [] // Allow all active system modules
-};
-
-const mockUserContext = {
-    roles: ['admin'] // Default admin role
-};
-
-interface AdminPageProps {
-    params: {
+interface AdminRootProps {
+    params: Promise<{
         slug?: string[];
-    };
+    }>;
 }
 
-export default async function AdminPage({ params }: AdminPageProps) {
-    const { slug } = params;
+export default async function AdminRootPage({ params }: AdminRootProps) {
+    const { slug } = await params;
 
-    // 1. Resolve Route
-    const match = resolveRoute(slug);
+    // 1. Try to resolve implicit context
+    const authContext = await resolveAuthContext();
 
-    if (!match) {
-        // If no match found via registry -> 404
+    if (authContext) {
+        // Implicit resolution worked!
+        // Redirect to Canonical URL
+        redirect(`/admin/t/${authContext.tenantContext.slug}`);
+    }
+
+    // Implicit resolution failed.
+    // Use params to decide if 404 or Login.
+
+    // If user is not logged in -> Login
+    // But resolveAuthContext returns null if user is not logged in OR if tenant ambiguous.
+    // We can't distinguish easily without separating calls.
+    // But safely: Redirect to Login is usually fine if unauthenticated.
+    // If authenticated but ambiguous -> Plan says "Select Tenant" (future) or 409.
+    // For now, redirect to Login clears state or re-prompts.
+
+    // However, if the user typed /admin/dashboard (legacy), 
+    // params.slug matches. We should probably 404 if we want STRICT enforcement.
+
+    if (slug?.length) {
+        // User typed /admin/some-module but NOT /admin/t/...
+        // Matches [[...slug]] at root.
+        // STRICT: 404.
         notFound();
     }
 
-    const { module, route } = match;
-
-    // 2. Check Activation
-    // In a real app, await getTenantContext() here
-    if (!isModuleActive(module, mockTenantContext)) {
-        notFound(); // Hiding inactive modules
-    }
-
-    // 3. Check Permissions
-    // In a real app, await getUserContext() here
-    if (!canAccessModule(module, mockUserContext)) {
-        // Return 403 Forbidden Component or redirect
-        return <div>403 Forbidden</div>;
-    }
-
-    // 4. Render Component
-    // Cast unknown to ComponentType
-    const Component = route.component as ComponentType<any>;
-
-    return <Component />;
+    // Root /admin
+    // If we are here, implicit failed.
+    // Redirect to Login.
+    redirect('/login');
 }

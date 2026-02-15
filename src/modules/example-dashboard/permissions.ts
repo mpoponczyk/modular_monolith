@@ -1,3 +1,3 @@
 export const permissions = {
-    requiredRoles: [] as string[],
+    requiredPermissions: [] as string[],
 };

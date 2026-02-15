@@ -39,7 +39,7 @@ export interface ModuleDefinition {
    * Display name for the module.
    */
   name: string;
-  
+
   /**
    * System Metadata
    */
@@ -57,10 +57,10 @@ export interface ModuleDefinition {
    */
   permissions: {
     /**
-     * Roles required to access this module.
-     * Empty array means public to all admin users.
+     * Permissions required to access this module.
+     * Empty array means public to all admin users (within tenant).
      */
-    requiredRoles: string[]; 
+    requiredPermissions: string[];
   };
 
   /**
@@ -96,9 +96,21 @@ export interface ModuleDefinition {
 }
 
 /**
- * Tenant Context for Activation Logic
+ * Tenant Entity
+ */
+export interface Tenant {
+  id: string;
+  name: string;
+  slug: string;
+  status: 'active' | 'suspended' | 'disabled';
+}
+
+/**
+ * Tenant Context for Activation Logic & Scope through the app
  */
 export interface TenantContext {
+  tenantId: string;
+  slug: string;
   /**
    * List of active module IDs for this tenant.
    * Acts as an ALLOW-LIST.
@@ -112,8 +124,10 @@ export interface TenantContext {
  * User Context for RBAC Logic
  */
 export interface UserContext {
+  userId: string;
   /**
-   * List of roles assigned to the current user.
+   * List of permissions assigned to the current user in the current tenant.
+   * Includes expanded wildcards if applicable.
    */
-  roles: string[];
+  permissions: string[];
 }

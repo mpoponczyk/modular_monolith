@@ -7,11 +7,16 @@
 import { ModuleDefinition, UserContext } from './types';
 
 export function canAccessModule(module: ModuleDefinition, context: UserContext): boolean {
-    // 1. If no roles are required, it's public (to admin users)
-    if (!module.permissions.requiredRoles || module.permissions.requiredRoles.length === 0) {
+    // 1. If no permissions are required, it's public (to admin users)
+    if (!module.permissions.requiredPermissions || module.permissions.requiredPermissions.length === 0) {
         return true;
     }
 
-    // 2. Check overlap between user roles and required roles
-    return module.permissions.requiredRoles.some(role => context.roles.includes(role));
+    // 2. Check for Wildcard '*' (Superuser within Tenant)
+    if (context.permissions.includes('*')) {
+        return true;
+    }
+
+    // 3. Check overlap between user permissions and required permissions
+    return module.permissions.requiredPermissions.some(permission => context.permissions.includes(permission));
 }
