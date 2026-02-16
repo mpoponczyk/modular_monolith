@@ -60,5 +60,5 @@ export default async function TenantPage({ params }: TenantPageProps) {
     // Cast unknown to ComponentType
     const Component = route.component as ComponentType<any>;
 
-    return <Component />;
+    return <Component tenantSlug={tenantSlug} slug={slug} />;
 }
