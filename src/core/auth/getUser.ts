@@ -1,3 +1,4 @@
+// mateusz poponczyk
 import { createAuthClient } from '@/infra/supabase/server-auth';
 import { User } from '@supabase/supabase-js';
 

@@ -1,3 +1,4 @@
+-- mateusz poponczyk
 -- ⚠️ DEV ONLY – NEVER RUN IN PRODUCTION ⚠️
 -- This script destroys all data and tables.
 -- Use with extreme caution.

@@ -1,3 +1,4 @@
+-- mateusz poponczyk
 -- STRICT SEED DATA (Minimal Bootstrap)
 
 -- 1. Create System Tenant

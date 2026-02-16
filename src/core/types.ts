@@ -1,3 +1,4 @@
+// mateusz poponczyk
 /**
  * Core Type Definitions for Modular Monolith Architecture
  * 

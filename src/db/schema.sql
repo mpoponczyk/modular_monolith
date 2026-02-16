@@ -1,3 +1,4 @@
+-- mateusz poponczyk
 -- Protocol: STRICT_RBAC_RLS_V2
 -- Database Schema for Modular Monolith (Production Grade)
 

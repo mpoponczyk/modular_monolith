@@ -42,13 +42,15 @@
 
 ## 8.6. 2FA & Session Failures
 
-| Scenario | Detection | System Behavior |
-| :--- | :--- | :--- |
-| **Cookie Missing** | Middleware Gate | **Redirect** to `/admin/t/[slug]/2fa`. |
-| **Invalid Signature** | `verifyTwoFaCookie` fails | **Redirect** to `/admin/t/[slug]/2fa` (Force re-auth). |
-| **Session Revoked** | DB Check (`validate_twofa_session`) | **Redirect** / Logout. |
-| **Tenant Mismatch** | Cookie slug != URL slug | **Redirect** to correct tenant 2FA page. |
-| **Token Expired** | JWT/Cookie TTL | **Redirect** to Login. |
+
+| Scenario | Detection | System Behavior | Evidence Location |
+| :--- | :--- | :--- | :--- |
+| **Cookie Missing** | Middleware / Guard | **Redirect** to `/admin/t/[slug]/2fa?reason=missing_cookie`. | `src/core/security/serverGuard.ts:23` |
+| **Invalid Signature** | `verifyTwoFaCookie` fails | **Redirect** to `/admin/t/[slug]/2fa?reason=invalid_signature`. | `src/core/security/serverGuard.ts:30` |
+| **Tenant Mismatch** | Payload `tenantId` != Request | **Redirect** to `/admin/t/[slug]/2fa?reason=tenant_mismatch`. | `src/core/security/serverGuard.ts:36` |
+| **Session Revoked** | DB Check (`validate_twofa_session`) | **Redirect** to `/admin/t/[slug]/2fa?reason=session_revoked`. | `src/core/security/serverGuard.ts:47` |
+| **Token Expired** | JWT/Cookie TTL | **Redirect** to Login. | Standard Auth Flow. |
+
 
 > **Note**: "Lock Held" is a controlled business outcome, not a system failure condition.
 

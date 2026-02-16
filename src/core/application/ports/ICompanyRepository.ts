@@ -1,3 +1,4 @@
+// mateusz poponczyk
 import { Company } from '../../domain/types';
 
 export interface ICompanyRepository {

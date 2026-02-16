@@ -1,3 +1,4 @@
+// mateusz poponczyk
 'use server';
 
 import { redirect } from 'next/navigation';
@@ -60,6 +61,7 @@ export async function verifyChallenge(tenantSlug: string, code: string) {
     // Generate Signed Cookie Payload
     // Variant A: Include tenantSlug for Middleware Binding
     const payload = {
+        tenantId: tenantId,
         tenantSlug,
         userId: user.id,
         sessionId: sessionId as string,
@@ -67,7 +69,7 @@ export async function verifyChallenge(tenantSlug: string, code: string) {
         iat: Math.floor(Date.now() / 1000)
     };
 
-    const signedToken = signTwoFaCookie(payload);
+    const signedToken = await signTwoFaCookie(payload);
 
     // Set Cookie
     // Strict: __Host- prefix if Secure/Path=/ (but path is /admin mostly)

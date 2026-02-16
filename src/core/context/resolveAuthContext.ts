@@ -1,3 +1,4 @@
+// mateusz poponczyk
 import { getUser } from '@/core/auth/getUser';
 import { getSession } from '@/core/auth/getSession';
 import { getUserContext } from './getUserContext';

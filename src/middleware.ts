@@ -1,3 +1,4 @@
+// mateusz poponczyk
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { verifyTwoFaCookie } from '@/core/security/twofaCookie';
@@ -29,12 +30,14 @@ export async function middleware(request: NextRequest) {
             // Exclude the 2FA page itself from checks to avoid loop
             if (!pathname.startsWith(`/admin/t/${tenantSlug}/2fa`)) {
 
+                // 3. Tenant 2FA Gate (Transport Heuristic)
+                // Real DB Binding Check happens in: src/app/.../page.tsx -> requireTwoFaVerified
                 const twoFaCookie = request.cookies.get('2fa_session');
 
                 let isValid = false;
 
                 if (twoFaCookie) {
-                    const payload = verifyTwoFaCookie(twoFaCookie.value);
+                    const payload = await verifyTwoFaCookie(twoFaCookie.value);
                     if (payload && payload.tenantSlug === tenantSlug) {
                         isValid = true;
                     }
@@ -43,7 +46,6 @@ export async function middleware(request: NextRequest) {
                 if (!isValid) {
                     const url = request.nextUrl.clone();
                     url.pathname = `/admin/t/${tenantSlug}/2fa`;
-                    // Valid 2FA needed. Redirect.
                     return NextResponse.redirect(url);
                 }
             }

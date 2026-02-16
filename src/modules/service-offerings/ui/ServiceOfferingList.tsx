@@ -1,3 +1,4 @@
+// mateusz poponczyk
 import React from 'react';
 import { getServiceOfferings, getProjects, getGroups } from '../actions';
 import { ServiceOfferingTable } from './ServiceOfferingTable';

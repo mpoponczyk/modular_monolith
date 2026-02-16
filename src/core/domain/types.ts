@@ -1,3 +1,4 @@
+// mateusz poponczyk
 /**
  * Business Hierarchy Domain Entities
  * Strict types matching database schema.

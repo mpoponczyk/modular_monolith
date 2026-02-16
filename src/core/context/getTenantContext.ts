@@ -1,3 +1,4 @@
+// mateusz poponczyk
 import { User } from '@supabase/supabase-js';
 import { Tenant, TenantContext } from '@/core/types';
 import { SupabaseTenantRepository } from '@/infra/repositories/SupabaseTenantRepository';

@@ -6,38 +6,38 @@ Strict automated commands verify the architectural invariants. These commands mu
 
 **Command**: Server-Admin Leak Check
 ```bash
-grep -r "server-admin" src/app src/core src/infra | grep -v "seed" | grep -v "migration"
+! grep -r "server-admin" src/app src/core src/infra | grep -v "seed" | grep -v "migration"
 ```
 -   **Guarantee**: The powerful `service_role` key is NOT used in the application runtime flow. It is restricted to seeding/migrations.
 
 **Command**: Admin Client Prohibition Check
 ```bash
-grep -r "createAdminClient" src/app src/modules src/core
+! grep -r "createAdminClient" src/app src/modules src/core
 ```
 -   **Guarantee**: Strictly prohibits `createAdminClient` usage in runtime code.
 
 **Command**: Direct Write Check (`edit_locks`)
 ```bash
-grep -R "from(['\"]edit_locks['\"])" -n src | grep -E "insert|update|delete"
+! grep -R "from(['\"]edit_locks['\"])" -n src | grep -E "insert|update|delete"
 ```
 -   **Guarantee**: No application code bypasses the RPCs to modify locks directly.
 
 **Command**: In-Memory Filtering Prevention
 ```bash
-grep -r "\.filter(.*tenant_id" src
+! grep -r "\.filter(.*tenant_id" src
 ```
 -   **Guarantee**: Ensures no `tenant_id` filtering happens in application memory (after query execution). Relies on repository-level SQL constraints.
 
 **Command**: Critical TODO Check
 ```bash
-grep -rE "TODO|FIXME" src/core/security src/db/migrations
+! grep -rE "TODO|FIXME" src/core/security src/db/migrations
 ```
 -   **Guarantee**: No unresolved technical debt in critical security paths.
 
 **Command**: Canonical Routing Enforcement
 ```bash
-grep -R --fixed-strings "?tenant=" src/app src/modules
-grep -r "searchParams.get('tenant')" src/app src/modules
+! grep -R --fixed-strings "?tenant=" src/app src/modules
+! grep -r "searchParams.get('tenant')" src/app src/modules
 ```
 -   **Guarantee**: Prohibits usage of `?tenant=` query parameter or `searchParams` usage in UI routing.
 
@@ -85,19 +85,19 @@ grep -R "force row level security" -n src/db/migrations
 
 **Command**: No Roles in Module Check
 ```bash
-grep -r "requiredRoles" src/modules
+! grep -r "requiredRoles" src/modules
 ```
 -   **Guarantee**: Ensures modules rely on Permissions, not Roles.
 
 **Command**: Module Authorization Boundary
 ```bash
-grep -R "canAccessModule" -n src/modules
+! grep -R "canAccessModule" -n src/modules
 ```
 -   **Guarantee**: Modules cannot self-authorize. `canAccessModule` must only be used in the routing boundary / layout layer.
 
 **Command**: Module Isolation Check
 ```bash
-grep -r "from '@/modules/" src/modules
+! grep -r "from '@/modules/" src/modules
 ```
 -   **Guarantee**: Ensures NO cross-module imports. Modules must only import from `src/core`, `src/shared`, or their own internal files.
 
@@ -122,13 +122,14 @@ npm run build
 
 ## 9.7. Business Hierarchy Verification (Strict)
 
-**Command**: RPC-Only Enforcement (No Direct Writes)
+**Command**: No Direct SQL Writes
 ```bash
-grep -R "from(['\"]companies['\"])" src | grep -E "insert|update|delete"
-grep -R "from(['\"]organizations['\"])" src | grep -E "insert|update|delete"
-# ... (Repeat for all hierarchy tables)
+! grep -R "from(['\"]companies['\"])" src | grep -E "insert|update|delete"
+! grep -R "from(['\"]organizations['\"])" src | grep -E "insert|update|delete"
+! grep -R "from(['\"]projects['\"])" src | grep -E "insert|update|delete"
+! grep -R "from(['\"]service_offerings['\"])" src | grep -E "insert|update|delete"
 ```
--   **Guarantee**: Ensures all hierarchy mutations go through `SECURITY DEFINER` RPCs.
+-   **Guarantee**: Hierarchy tables are strictly locked down.
 
 **Command**: RPC Existence Check
 ```bash
@@ -146,22 +147,44 @@ grep -R "force row level security" src/db/migrations | grep -E "companies|organi
 
 -   **Guarantee**: Hierarchy tables are strictly locked down.
 
-## 9.8. 2FA Verification
+## 9.8. 2FA Verification (Strict Evidence)
 
-**Command**: 2FA RPC Security
+**Command**: HEX Signature & Timing Safe Check
 ```bash
-grep -R "create or replace function public.*_login_challenge" src/db/migrations
+grep "bufferToHex" src/core/security/twofaCookie.ts
+grep "crypto.subtle.verify" src/core/security/twofaCookie.ts
+! grep "Buffer.from" src/core/security/twofaCookie.ts
 ```
--   **Guarantee**: Ensures 2FA RPCs are present.
+-   **Guarantee**: Ensures signatures are HEX encoded, compared using Web Crypto, and NO Node.js Buffer usage.
 
-**Command**: 2FA Middleware Gate
+**Command**: Payload Tenant Binding Check
 ```bash
-grep "2fa_session" src/middleware.ts
+grep "tenantId: string;" src/core/security/twofaCookie.ts
 ```
--   **Guarantee**: Middleware must explicitly check the 2FA cookie.
+-   **Guarantee**: Payload structure MUST include strict `tenantId`.
 
-**Command**: Cookie Rotation Check
+**Command**: Guard Enforcement Check
 ```bash
-grep "cookieStore.set('2fa_session'" src/app
+grep "requireTwoFaVerified" src/app/\(admin\)/admin/t/\[tenantSlug\]/\[\[...slug\]\]/page.tsx
 ```
--   **Guarantee**: Ensures 2FA cookies are being set/rotated in the application layer.
+-   **Guarantee**: The `TenantPage` component enforces 2FA verification before rendering.
+
+**Command**: Transport Gate Check
+```bash
+grep "verifyTwoFaCookie" src/middleware.ts
+```
+-   **Guarantee**: Middleware performs a transport-level check to fail fast.
+
+**Command**: No Global 2FA Route
+```bash
+[ ! -d src/app/2fa ] && echo "PASS: No global 2fa route"
+```
+-   **Guarantee**: 2FA routes are strictly tenant-scoped under `/admin/t/[slug]/2fa`.
+
+**Command**: RPC Existence & Security Check
+```bash
+grep -ir "create or replace function public.validate_twofa_session" src/db/migrations
+grep -ir "set search_path = public, extensions, auth" src/db/migrations
+```
+-   **Guarantee**: The `validate_twofa_session` RPC exists and uses strict search path.
+

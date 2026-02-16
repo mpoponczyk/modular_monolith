@@ -1,3 +1,4 @@
+// mateusz poponczyk
 import React from 'react';
 import { getProject, getProjectCompanies, getOrgCompanies } from '../actions';
 import { ProjectCompanyManager } from './ProjectCompanyManager';

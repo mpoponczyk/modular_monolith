@@ -1,3 +1,4 @@
+// mateusz poponczyk
 import { ModuleDefinition } from '@/core/types';
 import { config } from './config';
 import { permissions } from './permissions';

@@ -1,3 +1,4 @@
+// mateusz poponczyk
 import React from 'react';
 import { getCompany, getCompanyRoles, getCompanyUsers } from '../actions';
 import { CompanyRBACManager } from './CompanyRBACManager';

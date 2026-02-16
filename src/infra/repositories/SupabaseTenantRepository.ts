@@ -1,3 +1,4 @@
+// mateusz poponczyk
 import { createAuthClient } from '@/infra/supabase/server-auth';
 import { ITenantRepository } from '@/core/application/ports/ITenantRepository';
 import { Tenant } from '@/core/types';

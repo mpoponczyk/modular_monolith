@@ -1,3 +1,4 @@
+// mateusz poponczyk
 import { Group, GroupMember } from '../../domain/types';
 
 export interface IGroupRepository {

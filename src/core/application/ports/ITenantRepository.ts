@@ -1,3 +1,4 @@
+// mateusz poponczyk
 import { Tenant } from "../../types";
 
 export interface ITenantRepository {

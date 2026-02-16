@@ -1,3 +1,4 @@
+// mateusz poponczyk
 export const config = {
     id: 'projects',
     name: 'Projects',

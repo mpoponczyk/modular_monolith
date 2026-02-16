@@ -1,3 +1,4 @@
+// mateusz poponczyk
 import { createAuthClient } from '@/infra/supabase/server-auth';
 import { IOrganizationRepository } from '@/core/application/ports/IOrganizationRepository';
 import { Organization, Company } from '@/core/domain/types';

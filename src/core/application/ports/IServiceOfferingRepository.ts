@@ -1,3 +1,4 @@
+// mateusz poponczyk
 import { ServiceOffering, Company } from '../../domain/types';
 
 export interface IServiceOfferingRepository {

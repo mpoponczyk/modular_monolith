@@ -36,26 +36,42 @@ For high-security operations, the system enforces a secondary, tenant-scoped aut
 
 1.  **User Access**: Code attempts to access a protected route.
 2.  **Middleware Gate**: Checks for valid `2fa_session` cookie matching `tenantSlug`.
+    *   **Evidence**: `src/middleware.ts` (Lines 34-42) - Reads cookie, verifies signature, checks slug.
+    *   **Heuristic**: Middleware does **NOT** query the DB. It only parses the signed cookie.
 3.  **Challenge**: If invalid/missing, redirects to `/admin/t/[tenantSlug]/2fa`.
 4.  **Creation**: User requests code -> `create_login_challenge` (RPC) -> Email.
+    *   **Evidence**: `src/app/(admin)/admin/t/[tenantSlug]/2fa/actions.ts` calls RPC `create_login_challenge`.
 5.  **Verification**: User submits code -> `verify_login_challenge` (RPC).
+    *   **Evidence**: `src/app/(admin)/admin/t/[tenantSlug]/2fa/actions.ts` calls RPC `verify_login_challenge`.
 6.  **Binding**: Server issues generic signed cookie using DB Session ID.
+    *   **Evidence**: `src/app/(admin)/admin/t/[tenantSlug]/2fa/actions.ts` (Lines 62-83) - Sets `2fa_session` cookie.
 
 ### Security Invariants
 
 1.  **RPC-Only Writes**:
     *   `create_login_challenge` and `verify_login_challenge` are `SECURITY DEFINER` functions.
-    *   `search_path` is strictly locked to `public, auth`.
+    *   `search_path` is strictly locked to `public, extensions, auth`.
     *   Public access is revoked; only `authenticated` role can execute.
 
-2.  **Fail-Closed Middleware**:
-    *   The middleware performs **no database queries**.
-    *   It relies purely on cryptographic validation of the signed cookie.
-    *   If the exact signature fails or tenant mismatch occurs -> Redirect.
+2.  **Dual-Layer Verification**:
+    *   **Layer 1 (Transport)**: Middleware checks cookie signature and tenant slug.
+        *   **Evidence**: `src/middleware.ts` -> `verifyTwoFaCookie`.
+    *   **Layer 2 (Truth)**: `serverGuard` checks DB for session validity (Revocation/Replay).
+        *   **Evidence**: `src/core/security/serverGuard.ts` calls `validate_twofa_session` RPC.
+        *   **Enforcement**: `src/app/(admin)/admin/t/[tenantSlug]/[[...slug]]/page.tsx` calls `requireTwoFaVerified`.
 
-3.  **Session Rotation**:
+3.  **Crypto & Payload**:
+    *   **HMAC SHA256**: Signatures are HEX encoded.
+        *   **Evidence**: `src/core/security/twofaCookie.ts` -> `digest('hex')`.
+    *   **Timing Safe**: Comparisons use `timingSafeEqual`.
+        *   **Evidence**: `src/core/security/twofaCookie.ts` -> `timingSafeEqual`.
+    *   **Payload**: Contains `tenantId`, `tenantSlug`, `userId`, `sessionId`, `iat`, `exp`.
+        *   **Evidence**: `src/core/security/twofaCookie.ts` (Interface `TwoFaPayload`).
+
+4.  **Session Rotation**:
     *   Every successful verification **invalidates all previous 2FA sessions** for that user/tenant.
-    *   This prevents session hijacking and replay attacks.
+        *   **Evidence**: `verify_login_challenge` RPC (SQL) updates `revoked_at` for old sessions.
+        *   **Logic**: `UPDATE public.twofa_sessions SET revoked_at = now() ...`.
 
 ## 10.4. RBAC Separation
 

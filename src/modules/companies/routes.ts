@@ -1,3 +1,4 @@
+// mateusz poponczyk
 import { RouteDefinition } from '@/core/types';
 import { CompanyList } from './ui/CompanyList';
 import { CompanyDetails } from './ui/CompanyDetails';

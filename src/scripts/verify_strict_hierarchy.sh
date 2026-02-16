@@ -1,4 +1,5 @@
 #!/bin/bash
+# mateusz poponczyk
 
 echo "Starting Strict Hierarchy Verification..."
 
@@ -53,6 +54,8 @@ check_empty "No Direct Writes to organizations" "grep -R \"from(['\\\"]organizat
 check_empty "No Direct Writes to projects" "grep -R \"from(['\\\"]projects['\\\"])\" $DIRS | grep -E \"insert|update|delete\""
 check_empty "No Direct Writes to service_offerings" "grep -R \"from(['\\\"]service_offerings['\\\"])\" $DIRS | grep -E \"insert|update|delete\""
 check_empty "No Direct Writes to groups" "grep -R \"from(['\\\"]groups['\\\"])\" $DIRS | grep -E \"insert|update|delete\""
+check_empty "No Direct Writes to login_challenges" "grep -R \"from(['\\\"]login_challenges['\\\"])\" $DIRS | grep -E \"insert|update|delete\""
+check_empty "No Direct Writes to twofa_sessions" "grep -R \"from(['\\\"]twofa_sessions['\\\"])\" $DIRS | grep -E \"insert|update|delete\""
 
 # 2. RPC Existence (In Migrations)
 check_exists "RPC: create_group" "grep -R \"create or replace function public.create_group\" src/db/migrations"

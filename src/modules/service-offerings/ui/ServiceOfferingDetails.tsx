@@ -1,3 +1,4 @@
+// mateusz poponczyk
 import React from 'react';
 import { getServiceOffering, getServiceOfferingCompanies, getProjectCompanies } from '../actions';
 import { ServiceOfferingCompanyManager } from './ServiceOfferingCompanyManager';

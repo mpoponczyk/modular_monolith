@@ -1,3 +1,4 @@
+// mateusz poponczyk
 import { User } from '@supabase/supabase-js';
 import { UserContext } from '@/core/types';
 import { SupabaseUserRepository } from '@/infra/repositories/SupabaseUserRepository';

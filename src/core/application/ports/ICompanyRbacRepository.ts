@@ -1,3 +1,4 @@
+// mateusz poponczyk
 import { CompanyRole, CompanyUser, CompanyRolePermission } from '../../domain/types';
 
 export interface ICompanyRbacRepository {

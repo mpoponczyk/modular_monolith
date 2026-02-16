@@ -1,3 +1,4 @@
+// mateusz poponczyk
 import { Project, Company } from '../../domain/types';
 
 export interface IProjectRepository {

@@ -1,3 +1,4 @@
+// mateusz poponczyk
 import { Organization, Company } from '../../domain/types';
 
 export interface IOrganizationRepository {

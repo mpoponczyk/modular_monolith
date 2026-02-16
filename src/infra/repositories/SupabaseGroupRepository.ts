@@ -1,3 +1,4 @@
+// mateusz poponczyk
 import { createAuthClient } from '@/infra/supabase/server-auth';
 import { IGroupRepository } from '@/core/application/ports/IGroupRepository';
 import { Group, GroupMember } from '@/core/domain/types';

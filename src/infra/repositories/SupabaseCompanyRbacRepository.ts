@@ -1,3 +1,4 @@
+// mateusz poponczyk
 import { createAuthClient } from '@/infra/supabase/server-auth';
 import { ICompanyRbacRepository } from '@/core/application/ports/ICompanyRbacRepository';
 import { CompanyRole, CompanyUser, CompanyRolePermission } from '@/core/domain/types';

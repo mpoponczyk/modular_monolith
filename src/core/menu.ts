@@ -1,3 +1,4 @@
+// mateusz poponczyk
 import { moduleRegistry } from './moduleRegistry';
 import { isModuleActive } from './activation';
 import { TenantContext, UserContext } from './types';

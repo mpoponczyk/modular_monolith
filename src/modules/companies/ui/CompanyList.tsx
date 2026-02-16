@@ -1,3 +1,4 @@
+// mateusz poponczyk
 import React from 'react';
 import { getCompanies } from '../actions';
 import { CompanyTable } from './CompanyTable';
