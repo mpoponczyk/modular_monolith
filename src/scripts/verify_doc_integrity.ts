@@ -5,24 +5,38 @@ const RELEASE_VERSION = 'v0.0.1-prealpha.1';
 const DOCS_DIR = path.join(process.cwd(), 'docs/architecture');
 const DOC_FILE = path.join(process.cwd(), `docs/Modular_Monolith_Architecture_${RELEASE_VERSION}.doc`);
 
+function unescapeHtml(text: string): string {
+    return text
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">")
+        .replace(/&quot;/g, "\"")
+        .replace(/&#039;/g, "'")
+        .replace(/&amp;/g, "&");
+}
+
 function normalizeText(text: string): string {
     return text
         .toLowerCase()
-        .replace(/<[^>]*>/g, ' ') // Strip HTML tags
         .replace(/[^\w\s]/g, '')  // Strip punctuation/markdown symbols
         .replace(/\s+/g, ' ')     // Collapse whitespace
         .trim();
 }
 
 function audit() {
-    console.log(`🔍 Starting Robust Audit of ${DOC_FILE}...\n`);
+    console.log(`🔍 Starting Exact Match Audit of ${DOC_FILE}...\n`);
 
     if (!fs.existsSync(DOC_FILE)) {
         console.error('❌ Documentation file not found!');
         process.exit(1);
     }
 
-    const rawDocContent = fs.readFileSync(DOC_FILE, 'utf-8');
+    let rawDocContent = fs.readFileSync(DOC_FILE, 'utf-8');
+
+    // CRITICAL FIX: Unescape entities FIRST, then strip HTML tags
+    // The previous version compared "quote" vs "&quot;" which failed.
+    rawDocContent = unescapeHtml(rawDocContent);
+    rawDocContent = rawDocContent.replace(/<[^>]*>/g, ' '); // Strip HTML tags
+
     // Create a massive normalized text blob from the doc
     const normalizedDoc = normalizeText(rawDocContent);
 
