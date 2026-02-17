@@ -1,0 +1,1435 @@
+
+    <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+    <head>
+        <meta charset='utf-8'>
+        <title>Modular Monolith Architecture - v0.0.2-prealpha</title>
+        <style>
+            body { font-family: Arial, sans-serif; line-height: 1.5; }
+            h1 { color: #2c3e50; border-bottom: 2px solid #eee; }
+            h2 { color: #34495e; margin-top: 20px; }
+            h3 { color: #7f8c8d; }
+            code { font-family: monospace; }
+            pre { background: #f8f9fa; padding: 10px; border: 1px solid #ddd; }
+            blockquote { border-left: 4px solid #ddd; padding-left: 10px; color: #777; }
+        </style>
+    </head>
+    <body>
+    <div style="text-align:center; padding: 50px;">
+        <h1>Modular Monolith Architecture</h1>
+        <h2>Documentation Bundle</h2>
+        <h3>Release: v0.0.2-prealpha</h3>
+    </div>
+    <br/><hr/><br/>
+
+        <div style="page-break-before: always;"></div>
+        <h1>File: 01_ARCHITECTURE_OVERVIEW.md</h1>
+        <hr/>
+        <h1>1. Architecture Overview</h1>
+<br/>
+<h2>1.1. System Structure</h2>
+The system follows a <b>Strict Modular Monolith</b> architecture optimized for multi-tenancy, security, and maintainability.
+<br/>
+<li><b>Core (<code style="background:#e0e0e0; padding:2px;">src/core</code>)</b>: Contains shared domain logic, authentication, context resolution, and application ports. It is the backbone of the system.</li>
+<li><b>Shared (<code style="background:#e0e0e0; padding:2px;">src/shared</code>)</b>: Cross-cutting presentation concerns (UI components, I18n). strictly decoupled from Core.</li>
+<li><b>Modules (<code style="background:#e0e0e0; padding:2px;">src/modules</code>)</b>: functional verticals (e.g., <code style="background:#e0e0e0; padding:2px;">example-dashboard</code>). Isolated by strict boundaries.</li>
+<li><b>Infrastructure (<code style="background:#e0e0e0; padding:2px;">src/infra</code>)</b>: implementations of Core ports (e.g., Supabase repositories).</li>
+<li><b>Application (<code style="background:#e0e0e0; padding:2px;">src/app</code>)</b>: Next.js App Router handling routing, layouts, and page composition.</li>
+<br/>
+<h2>1.2. Key Principles</h2>
+<br/>
+<h3>Strict Module Isolation</h3>
+<li>Modules must not import from other modules.</li>
+<li>Interaction occurs only via the <code style="background:#e0e0e0; padding:2px;">moduleRegistry</code> and Core definitions.</li>
+<li>The <code style="background:#e0e0e0; padding:2px;">ModuleDefinition</code> contract enforces structure.</li>
+<br/>
+<h3>Multi-Tenant Enforcement</h3>
+<li><b>Database Level</b>: All data is tenant-scoped via <code style="background:#e0e0e0; padding:2px;">tenant_id</code> columns and Row Level Security (RLS).</li>
+<li><b>Application Level</b>: All repositories force explicit <code style="background:#e0e0e0; padding:2px;">tenantId</code> filtering.</li>
+<li><b>Context Level</b>: <code style="background:#e0e0e0; padding:2px;">AuthContext</code> is resolved deterministically per request.</li>
+<br/>
+<h3>Security Model (See Chapter 10)</h3>
+<li><b>RPC-Only Writes</b>: All sensitive mutations (Hierarchy, RBAC, 2FA) MUST occur via <code style="background:#e0e0e0; padding:2px;">SECURITY DEFINER</code> RPCs. Direct table writes are forbidden.</li>
+<li><b>Strict 2FA</b>: Tenant-aware, DB-backed 2FA enforcement with session rotation.</li>
+<li><b>Fail-Closed</b>: Systems deny access by default unless explicitly granted.</li>
+<li><b>RLS as Safety Net</b>: Application logic filters data, but RLS ensures safety if logic fails.</li>
+<br/>
+<h3>Canonical Routing</h3>
+<li>Routes are tenant-scoped: <code style="background:#e0e0e0; padding:2px;">/admin/t/[tenantSlug]/...</code>.</li>
+<li>Root <code style="background:#e0e0e0; padding:2px;">/admin</code> routes strictly redirect or fail if tenant definition is ambiguous.</li>
+<br/>
+<h2>1.3. Architecture Diagram (ASCII)</h2>
+<br/>
+<pre>
+[Browser Request]
+      |
+      v
+[Next.js Middleware/Routing]
+      |
+      v
+[Layout: /admin/t/[slug]] -> [resolveAuthContext] -> [SupabaseTenantRepository]
+      |                             |
+      |   (Fail if Null)            v
+      |                       [DB: Public Schema]
+      |
+      v
+[Module Page] -> [canAccessModule] -> [RBAC Check]
+      |
+      v
+[Module Component] -> [Repositories] -> [Supabase Client (Auth)]
+                                                |
+                                                v
+                                      [DB: RLS Filtered Data]
+</pre>
+<br/>
+<h2>1.4. Sources of Truth</h2>
+<br/>
+<p>The system relies on specific, authoritative sources for its state:</p>
+<br/>
+<li>  <b>Module Availability</b>: Defined by <code style="background:#e0e0e0; padding:2px;">moduleRegistry</code> + <code style="background:#e0e0e0; padding:2px;">ModuleDefinition.system.isActive</code> (Hard Switch).</li>
+<li>  <b>Tenant Enablement</b>: Defined by <code style="background:#e0e0e0; padding:2px;">tenant_modules</code> table (Tenant-scoped activation).</li>
+<li>  <b>RBAC Enforcement</b>: <code style="background:#e0e0e0; padding:2px;">requiredPermissions</code> (Static Contract) vs <code style="background:#e0e0e0; padding:2px;">resolved user permissions</code> (Dynamic Context).</li>
+<li>  <b>Tenant Context</b>: Resolved strictly per request via <code style="background:#e0e0e0; padding:2px;">resolveAuthContext</code> (No global/static state).</li>
+<li>  <b>Canonical Routing</b>: The URL path <code style="background:#e0e0e0; padding:2px;">/admin/t/[tenantSlug]</code> is the only source of truth for the current tenant.</li>
+<br/>
+<h2>1.5. Tenant Resolution Summary</h2>
+<br/>
+<p>The system uses a strict, deterministic resolution process:</p>
+<br/>
+<p>1.  <b>Source</b>: <code style="background:#e0e0e0; padding:2px;">tenantSlug</code> is derived <b>ONLY</b> from the route parameter <code style="background:#e0e0e0; padding:2px;">/admin/t/:tenantSlug</code>.<br/>2.  <b>Validation</b>: If the slug is provided but invalid (not found/no access) -> <b>Fail-Closed</b> (Redirect to Login/404).<br/>3.  <b>Missing Slug</b>:<br/>    -   <b>1 Tenant</b>: Implicitly resolved (Auto-Redirect to Canonical).<br/>    -   <b>>1 Tenant</b>: Ambiguous -> <b>409 Conflict</b> (Redirect to Tenant Selection).<br/>    -   <b>0 Tenants</b>: No Access -> <b>Fail</b> (403/404).<br/>4.  <b>Constraints</b>:<br/>    -   No support for <code style="background:#e0e0e0; padding:2px;">?tenant=</code> query parameters in UI.<br/>    -   No "default tenant" or "last visited" fallbacks in the core logic (strictly explicit).</p>
+<br/>
+<h2>1.6. Verification Points (High-Level)</h2>
+<br/>
+<p>Production invariants that must be verified:</p>
+<br/>
+<p>1.  <b>No Server-Admin</b>: The <code style="background:#e0e0e0; padding:2px;">service_role</code> key is strictly forbidden in the request/response flow.<br/>2.  <b>Explicit Filtering</b>: All repository methods MUST require <code style="background:#e0e0e0; padding:2px;">tenantId</code> and filter by it explicitly.<br/>3.  <b>RLS Enforcement</b>: All tenant-scoped tables MUST have RLS enabled and forced.<br/>4.  <b>Fail-Closed Routing</b>: Routes must not render if context is invalid.<br/>5.  <b>Module Isolation</b>: No cross-module imports allowed; strict boundary enforcement.</p>
+<br/>
+<h2>1.7. Static vs Dynamic State</h2>
+<br/>
+<p>The system strictly distinguishes between compile-time definitions and runtime state:</p>
+<br/>
+<li>  <b>Static (Compile-Time)</b>:</li>
+    -   <code style="background:#e0e0e0; padding:2px;">moduleRegistry</code>: The immutable catalog of available code modules.
+    -   <code style="background:#e0e0e0; padding:2px;">ModuleDefinition</code>: Structural contract (routes, metadata).
+    -   <code style="background:#e0e0e0; padding:2px;">system.isActive</code>: Hard infrastructure switch (commits/deploys).
+<br/>
+<li>  <b>Dynamic (Runtime / Data)</b>:</li>
+    -   <code style="background:#e0e0e0; padding:2px;">tenant_modules</code>: Which tenants have subscribed to which modules.
+    -   <code style="background:#e0e0e0; padding:2px;">role_permissions</code>: How abstract roles map to granular permissions.
+    -   <code style="background:#e0e0e0; padding:2px;">resolved user permissions</code>: The effective permission set for a user in a specific tenant to a specific module.
+<br/>
+<li>  <b>Per-Request (Ephemeral)</b>:</li>
+    -   <code style="background:#e0e0e0; padding:2px;">resolveAuthContext</code>: The calculated identity for the current HTTP request.
+    -   <code style="background:#e0e0e0; padding:2px;">tenantSlug</code>: The context identifier derived from the URL for this specific execution.
+    -   <code style="background:#e0e0e0; padding:2px;">UserContext</code>: The temporary object holding the resolved permissions for the duration of the request.
+
+        
+        <div style="page-break-before: always;"></div>
+        <h1>File: 02_TENANCY_MODEL.md</h1>
+        <hr/>
+        <h1>2. Tenancy Model</h1>
+<br/>
+<h2>2.1. Tenant Resolution Strategy</h2>
+<br/>
+<p>The system employs a strict, deterministic resolution, precedence-based strategy.</p>
+<br/>
+<p><b>Precedence Order:</b><br/>1.  <b>URL Path (Primary)</b>: <code style="background:#e0e0e0; padding:2px;">/admin/t/[tenantSlug]</code><br/>    -   This is the <b>Canonical</b> source of truth.<br/>    -   If present, other sources are ignored.<br/>    -   <b>Constraint</b>: If a slug is present, the system MUST validate that slug directly. It MUST NOT fallback to implicit resolution.<br/>2.  <b>Header (API/HTMX)</b>: <code style="background:#e0e0e0; padding:2px;">x-tenant-slug</code><br/>    -   Used for non-navigation requests (API, RPC, background interactions).<br/>    -   <b>Constraint</b>: It MUST NOT override a URL path tenantSlug.<br/>    -   <b>Constraint</b>: It MUST NOT be used for primary UI routing.<br/>    -   <b>Validation</b>: Even when derived from Header, the system <b>MUST validate membership</b> via <code style="background:#e0e0e0; padding:2px;">tenant_users</code>. Transport presence does not imply access.<br/>3.  <b>Cookie (Fallback)</b>: <code style="background:#e0e0e0; padding:2px;">tenant_slug</code><br/>    -   Used for redirecting from root to last visited.<br/>    -   <b>Validation</b>: Even when derived from Cookie, the system <b>MUST validate membership</b> via <code style="background:#e0e0e0; padding:2px;">tenant_users</code>.<br/>4.  <b>Implicit (Strict)</b>:<br/>    -   This step runs <b>ONLY if no tenantSlug is present</b> in the URL.<br/>    -   Query <code style="background:#e0e0e0; padding:2px;">tenant_users</code> for the authenticated user.<br/>    -   <b>Count = 1</b>: Auto-select. <b>System MUST redirect to canonical URL <code style="background:#e0e0e0; padding:2px;">/admin/t/[resolvedSlug]</code>.</b><br/>        -   <b>Constraint</b>: Canonical redirect MUST occur <b>before rendering any tenant-scoped layout</b>.<br/>        -   <b>Constraint</b>: No module component may render under a non-canonical URL.<br/>    -   <b>Count > 1</b>: Ambiguous (Return Null).<br/>    -   <b>Count = 0</b>: None (Return Null).</p>
+<br/>
+<p>In all cases, the system distinguishes between:<br/><li>  <b>Identity failure</b> (authentication)</li><br/><li>  <b>Authorization failure</b> (membership/permission)</li><br/><li>  <b>Context ambiguity</b> (multiple tenants)</li><br/>Each results in a different deterministic outcome.</p>
+<br/>
+<h2>2.2. Fail-Closed Behavior</h2>
+<br/>
+<p>The system distinguishes strictly between authentication and resolution failures.</p>
+<br/>
+<h3>A. Authentication Failure</h3>
+<li>  <b>Condition</b>: User is not authenticated (no session).</li>
+<li>  <b>Action</b>: Redirect to <code style="background:#e0e0e0; padding:2px;">/login</code>.</li>
+<br/>
+<h3>B. Tenant Resolution Failure (User Authenticated)</h3>
+Failed resolution NEVER redirects to <code style="background:#e0e0e0; padding:2px;">/login</code> if the user is authenticated.
+Tenant resolution consists of <b>TWO independent checks</b>:
+1.  <b>Step 1: Slug Existence</b> (Does a tenant with this slug exist?)
+2.  <b>Step 2: Membership Validation</b> (Does the user belong to that tenant?)
+<br/>
+<p>1.  <b>Case 1: No Membership (Step 2 Fail)</b><br/>    -   <b>Condition</b>: Slug exists (Step 1 pass), but User is not a member (Step 2 fail).<br/>    -   <b>Action</b>: Return <b>403 Forbidden</b> or <b>404 Not Found</b> (Security through obscurity preferred).<br/>    -   <b>Reason</b>: User exists, but has no access to this specific tenant.</p>
+<br/>
+<p>2.  <b>Case 2: Ambiguous Membership</b><br/>    -   <b>Condition</b>: User belongs to >1 tenant, no explicit slug provided, implicit resolution blocked.<br/>    -   <b>Action</b>: Redirect to <code style="background:#e0e0e0; padding:2px;">/admin/select-tenant</code> OR return <b>HTTP 409 Conflict</b>.<br/>    -   <b>Reason</b>: System cannot deterministically choose a context.</p>
+<br/>
+<p>3.  <b>Case 3: Invalid Slug (Step 1 Fail)</b><br/>    -   <b>Condition</b>: The requested tenant slug does not exist in the database.<br/>    -   <b>Action</b>: Return <b>404 Not Found</b>.</p>
+<br/>
+<h2>2.3. Anti-Patterns & Prohibitions</h2>
+<br/>
+<li>  <b>Query Parameters</b>: <code style="background:#e0e0e0; padding:2px;">?tenant=</code> is strictly forbidden for routing to avoid caching/SEO issues.</li>
+<li>  <b>Cross-Tenant Leaks</b>:</li>
+    -   Repositories MUST enforce <code style="background:#e0e0e0; padding:2px;">.eq('tenant_id', tenantId)</code> before selecting.
+    -   <code style="background:#e0e0e0; padding:2px;">resolveAuthContext</code> verifies that the <code style="background:#e0e0e0; padding:2px;">user</code> is actually a member of the requested <code style="background:#e0e0e0; padding:2px;">tenantSlug</code> (via <code style="background:#e0e0e0; padding:2px;">tenant_users</code> check).
+<br/>
+<p><b>Security Invariant</b>:<br/>At no point may tenant context be inferred from client-controlled state alone. Every tenant resolution must be verified against database membership.<br/></p>
+        
+        <div style="page-break-before: always;"></div>
+        <h1>File: 03_RBAC_MODEL.md</h1>
+        <hr/>
+        <h1>3. RBAC Model (Strict Permission-Based)</h1>
+<br/>
+<h2>3.1. Core Concepts</h2>
+<br/>
+<p>The system uses a <b>Permission-Based Access Control</b> model, not Role-Based (in the application code). Roles exist only in the database to group permissions.</p>
+<br/>
+<li>  <b>Permission</b>: Atomic unit of access (e.g., <code style="background:#e0e0e0; padding:2px;">settings.write</code>, <code style="background:#e0e0e0; padding:2px;">users.view</code>).</li>
+<li>  <b>Role</b>: A named collection of permissions (e.g., <code style="background:#e0e0e0; padding:2px;">Owner</code>, <code style="background:#e0e0e0; padding:2px;">Editor</code>).</li>
+<li>  <b>User</b>: Assigned a Role *within* a Tenant.</li>
+<br/>
+<h2>3.2. Data Flow</h2>
+<br/>
+<p>1.  <b>Database</b>:<br/>    -   <code style="background:#e0e0e0; padding:2px;">permissions</code>: All available permission strings.<br/>    -   <code style="background:#e0e0e0; padding:2px;">role_permissions</code>: Mapping of Role -> Permissions.<br/>    -   <code style="background:#e0e0e0; padding:2px;">tenant_users</code>: Assignment of User -> Role (Tenant Scoped).</p>
+<br/>
+<p>2.  <b>Resolution (<code style="background:#e0e0e0; padding:2px;">getUserContext</code>)</b>:<br/>    -   Fetches user's role for the active tenant.<br/>    -   Joins <code style="background:#e0e0e0; padding:2px;">role_permissions</code> and <code style="background:#e0e0e0; padding:2px;">permissions</code>.<br/>    -   Returns a flat array of permission strings (string[]).<br/>    -   <b>Constraint</b>: If resolution fails (no role, invalid join), it returns <code style="background:#e0e0e0; padding:2px;">[]</code> (Empty Set).</p>
+<br/>
+<p>3.  <b>Enforcement (<code style="background:#e0e0e0; padding:2px;">canAccessModule</code>)</b>:<br/>    -   Input: <code style="background:#e0e0e0; padding:2px;">ModuleDefinition</code> (defines <code style="background:#e0e0e0; padding:2px;">requiredPermissions</code>).<br/>    -   Logic: Checks if the User's context (resolved permissions) contains the required permissions.<br/>    -   <b>Invariant</b>: <code style="background:#e0e0e0; padding:2px;">canAccessModule</code> MUST be evaluated only after successful tenant resolution, membership validation, and module activation checks (system.isActive AND tenant_modules). A module that is inactive MUST NOT be evaluated for permissions. RBAC evaluation MUST NOT occur without a valid tenant-scoped AuthContext.</p>
+<br/>
+<h2>3.3. Permission Semantics</h2>
+<br/>
+<h3>1. Logic (AND)</h3>
+<code style="background:#e0e0e0; padding:2px;">requiredPermissions</code> uses strict <b>AND</b> logic.
+<li>  Access is granted ONLY if the user holds <b>ALL</b> listed permissions.</li>
+<li>  *Exception*: If user holds <code style="background:#e0e0e0; padding:2px;">*</code> (Wildcard), all requirements are satisfied.</li>
+<li>  <b>Evaluation Order</b>: If userPermissions contains <code style="background:#e0e0e0; padding:2px;">*</code>, access MUST be granted before evaluating requiredPermissions. Wildcard short-circuits AND evaluation.</li>
+<br/>
+<h3>2. Empty Requirements</h3>
+If <code style="background:#e0e0e0; padding:2px;">requiredPermissions</code> is <b>Empty</b> (<code style="background:#e0e0e0; padding:2px;">[]</code>):
+<li>  <b>Meaning</b>: <b>Public within Tenant</b>.</li>
+<li>  <b>Effect</b>: Any authenticated user who is a valid member of the current tenant can access this module.</li>
+<li>  <b>Constraint</b>: "Public within Tenant" does <b>NOT</b> bypass tenant membership validation. User must still be a valid member of the active tenant.</li>
+<li>  It does <b>NOT</b> imply "Deny All".</li>
+<br/>
+<h3>3. Wildcard Behavior (<code style="background:#e0e0e0; padding:2px;">*</code>)</h3>
+<li>  <b>Scope</b>: Tenant-Scoped ONLY.</li>
+<li>  <b>Definition</b>: The <code style="background:#e0e0e0; padding:2px;">*</code> string is a permission stored in the DB.</li>
+<li>  <b>Handling</b>:</li>
+    -   <b>Repository</b>: Returns <code style="background:#e0e0e0; padding:2px;">['*']</code> (raw). It does NOT expand it.
+    -   <b>Enforcement Layer</b>: <code style="background:#e0e0e0; padding:2px;">canAccessModule</code> checks:
+        <pre>typescript
+        if (userPermissions.includes('*')) return true;
+        </pre>
+<li>  <b>Constraint</b>: There is NO global superadmin. The <code style="background:#e0e0e0; padding:2px;">*</code> logic applies only within the isolated tenant context.</li>
+<li>  <b>Invariant</b>: Wildcard does not alter the meaning of empty requiredPermissions; empty requirements still require valid tenant membership (Wildcard user must still be a member).</li>
+<br/>
+<h2>3.4. Fail-Closed Guarantees</h2>
+<br/>
+<p>The system enforces specific behaviors for partial failures:</p>
+<br/>
+<p>1.  <b>Role Resolution Failure</b>:<br/>    -   If a user is in <code style="background:#e0e0e0; padding:2px;">tenant_users</code> but has no role assigned, or the role has no permissions -> <code style="background:#e0e0e0; padding:2px;">resolvedPermissions</code> = <code style="background:#e0e0e0; padding:2px;">[]</code>.<br/>2.  <b>Resolution Error</b>:<br/>    -   If the DB query fails -> <code style="background:#e0e0e0; padding:2px;">resolvedPermissions</code> = <code style="background:#e0e0e0; padding:2px;">[]</code>.<br/>    -   <b>Invariant</b>: If permission resolution fails for any reason, access MUST be denied (treated as having no permissions).<br/>    -   <b>Invariant</b>: Under no circumstance may permission resolution failure default to '*' or implicit allow.</p>
+<br/>
+<h2>3.5. Code Contract</h2>
+<br/>
+<li>  <b>Forbidden</b>: <code style="background:#e0e0e0; padding:2px;">requiredRoles</code> array in Module Definition.</li>
+<li>  <b>Mandatory</b>: <code style="background:#e0e0e0; padding:2px;">requiredPermissions</code> array.</li>
+
+        
+        <div style="page-break-before: always;"></div>
+        <h1>File: 04_ROUTING_MODEL.md</h1>
+        <hr/>
+        <h1>4. Routing Model</h1>
+<br/>
+<h2>4.1. Canonical Route Structure</h2>
+<br/>
+<p>The system enforces a strict hierarchical routing model to guarantee context.</p>
+<br/>
+<p><b>Pattern</b>: <code style="background:#e0e0e0; padding:2px;">/admin/t/[tenantSlug]/[[...slug]]</code></p>
+<br/>
+<li>  <code style="background:#e0e0e0; padding:2px;">/admin</code>: Base admin path.</li>
+<li>  <code style="background:#e0e0e0; padding:2px;">/t/</code>: Tenant namespace.</li>
+<li>  <code style="background:#e0e0e0; padding:2px;">[tenantSlug]</code>: The explicit Context Identifier.</li>
+<li>  <code style="background:#e0e0e0; padding:2px;">[[...slug]]</code>: Module-specific route (Tenant-Agnostic).</li>
+<br/>
+<h2>4.2. Separation of Concerns</h2>
+<br/>
+<li>  <b>Tenant Slug</b>: Used *exclusively* to resolve <code style="background:#e0e0e0; padding:2px;">AuthContext</code> (Tenant + User Permissions).</li>
+<li>  <b>Module Slug</b>: Used *exclusively* to resolve the <code style="background:#e0e0e0; padding:2px;">Module</code> from the <code style="background:#e0e0e0; padding:2px;">registry</code>.</li>
+<li>  <b>Independence</b>: <code style="background:#e0e0e0; padding:2px;">resolveRoute</code> does not know or care about the tenant. It maps <code style="background:#e0e0e0; padding:2px;">['settings', 'users']</code> to the Settings Module component.</li>
+<br/>
+<h2>4.3. Fail-Closed Root</h2>
+<br/>
+<p>The root path <code style="background:#e0e0e0; padding:2px;">/admin/[[...slug]]</code> (without <code style="background:#e0e0e0; padding:2px;">/t/</code>) serves only as a <b>Dispatcher</b>.</p>
+<br/>
+<li>  Behaviors:</li>
+    1.  <b>Implicit Resolution</b>: Tries to find a single valid tenant for the user.
+    2.  <b>Redirect</b>: If found -> Redirects to Canonical <code style="background:#e0e0e0; padding:2px;">/admin/t/[slug]</code>.
+    3.  <b>Fail</b>: If ambiguous or none -> Redirects to Login or 404.
+<li>  <b>No UI</b>: This route does not render the admin UI directly. It enforces strict canonicalization.</li>
+<br/>
+<h2>4.4. Database Independence</h2>
+<br/>
+<p>Routing logic (mapping URL -> Component) is static (defined in Registry code). It does NOT depend on a database call. This ensures the routing structure is deterministic and high-performance. Database checks happen only for *Access Control* (Can this user see this route?), not for *Resolution* (Does this route exist?).</p>
+<br/>
+<h2>4.5. Activation & Authorization Order</h2>
+<br/>
+<p><b>Evaluation Order per Request:</b></p>
+<br/>
+<p>0.  <b><code style="background:#e0e0e0; padding:2px;">resolveAuthContext</code> (Tenant + UserContext)</b> MUST succeed.<br/>    -   Canonical tenant redirect (if implicit resolution = 1 tenant) MUST occur BEFORE <code style="background:#e0e0e0; padding:2px;">resolveRoute</code>.<br/>    -   No module resolution may occur without a valid tenant-scoped <code style="background:#e0e0e0; padding:2px;">AuthContext</code>.<br/>1.  <b><code style="background:#e0e0e0; padding:2px;">resolveRoute</code></b> (static module resolution via <code style="background:#e0e0e0; padding:2px;">moduleRegistry</code>).<br/>2.  <b>Module Activation Check</b> (<code style="background:#e0e0e0; padding:2px;">system.isActive</code> + <code style="background:#e0e0e0; padding:2px;">tenant_modules</code>).<br/>3.  <b>RBAC Check</b> (<code style="background:#e0e0e0; padding:2px;">canAccessModule</code>).<br/>4.  <b>Rendering</b>.</p>
+<br/>
+<p><b>Security Invariant:</b><br/><li>  Routing MUST NOT leak activation state or permission state.</li><br/><li>  Inactive modules and unauthorized modules MUST both return <b>404</b>.</li><br/><li>  No "Feature Disabled" UI may render for unauthorized tenants.</li><br/><li>  <b>Activation and RBAC checks MUST never execute with undefined <code style="background:#e0e0e0; padding:2px;">tenantId</code> or undefined <code style="background:#e0e0e0; padding:2px;">UserContext</code>.</b></li><br/></p>
+        
+        <div style="page-break-before: always;"></div>
+        <h1>File: 05_DATA_LAYER.md</h1>
+        <hr/>
+        <h1>5. Data Layer</h1>
+<br/>
+<h2>5.1. Layering Strategy</h2>
+<br/>
+<p>The data layer follows a strict Port/Adapter pattern to decouple Core business logic from Infrastructure specifics.</p>
+<br/>
+<li>  <b>Ports (<code style="background:#e0e0e0; padding:2px;">src/core/application/ports</code>)</b>: TypeScript Interfaces defining *what* is needed (e.g., <code style="background:#e0e0e0; padding:2px;">ITenantRepository</code>).</li>
+<li>  <b>Adapters (<code style="background:#e0e0e0; padding:2px;">src/infra/repositories</code>)</b>: Implementations using specific technologies (e.g., <code style="background:#e0e0e0; padding:2px;">SupabaseTenantRepository</code> using <code style="background:#e0e0e0; padding:2px;">supabase-js</code>).</li>
+<br/>
+<h2>5.2. Strict Enforcement Rules</h2>
+<br/>
+<h3>1. Tenant-Scoped Table Definition</h3>
+A <b>tenant-scoped table</b> is any table containing a <code style="background:#e0e0e0; padding:2px;">tenant_id</code> column.
+All queries against such tables MUST include explicit <code style="background:#e0e0e0; padding:2px;">tenant_id</code> filtering.
+<br/>
+<h3>2. Explicit Tenant Filtering</h3>
+<b>Invariant</b>: No query touching a tenant-scoped table may execute without an explicit <code style="background:#e0e0e0; padding:2px;">tenant_id</code> equality constraint bound to it.
+Implicit reliance on RLS is forbidden.
+<br/>
+<li>  The <code style="background:#e0e0e0; padding:2px;">tenant_id</code> constraint MUST be applied at the SQL level.</li>
+<li>  Tenant filtering MUST NOT occur in application memory after query execution.</li>
+<br/>
+<pre>typescript
+// Correct
+supabase.from('table').select().eq('tenant_id', tenantId);
+<br/>
+<p>// Prohibited<br/>supabase.from('table').select(); // Implicit reliance on RLS is forbidden<br/>// Prohibited<br/>data.filter(d => d.tenant_id === tenantId); // In-memory filtering prohibited<br/></pre></p>
+<br/>
+<h3>3. Repository Boundary Rule</h3>
+<li>  Repositories MUST receive <code style="background:#e0e0e0; padding:2px;">tenantId</code> as an explicit argument.</li>
+<li>  Repositories MUST NOT infer <code style="background:#e0e0e0; padding:2px;">tenantId</code> from global context or <code style="background:#e0e0e0; padding:2px;">resolveAuthContext</code> internally.</li>
+<li>  Tenant context must be injected from the application layer.</li>
+<br/>
+<h3>4. Mandatory Tenant ID Validation</h3>
+Repositories methods must Throw Error if <code style="background:#e0e0e0; padding:2px;">tenantId</code> argument is undefined or null.
+<br/>
+<h3>5. Prevent Unscoped Repository Methods</h3>
+<li>  Repositories MUST NOT expose methods that operate on tenant-scoped tables without requiring <code style="background:#e0e0e0; padding:2px;">tenantId</code>.</li>
+<li>  Unscoped variants (e.g., <code style="background:#e0e0e0; padding:2px;">getAllUsers()</code>) are strictly forbidden.</li>
+<br/>
+<h3>6. Service Role Prohibition</h3>
+The application code MUST use <code style="background:#e0e0e0; padding:2px;">createAuthClient()</code> (User-Scoped).
+<b>Prohibited</b>: <code style="background:#e0e0e0; padding:2px;">createAdminClient()</code> / <code style="background:#e0e0e0; padding:2px;">service_role</code> key usage in the request flow.
+<br/>
+<h3>7. RLS as Safety Net</h3>
+While the application logic (explicit filtering) is the primary defense, <b>Row Level Security (RLS)</b> is strictly enabled on the database to act as a fail-safe backstop. If the repo fails to filter, the DB prevents cross-tenant leakage.
+<br/>
+<h2>5.3. RPC Boundaries</h2>
+Complex mutations (like Edit Locks) are encapsulated in PostgreSQL Functions (RPCs) to ensure atomicity and strict permission checking that might be hard to guarantee with multiple client-side calls.
+
+        
+        <div style="page-break-before: always;"></div>
+        <h1>File: 06_RLS_SECURITY_MODEL.md</h1>
+        <hr/>
+        <h1>6. RLS Security Model</h1>
+<br/>
+<h2>6.1. Policy Architecture</h2>
+<br/>
+<p>The system enforces <b>Row Level Security (RLS)</b> on all sensitive tables.</p>
+<br/>
+<li>  <b>Mode</b>: <code style="background:#e0e0e0; padding:2px;">FORCE ROW LEVEL SECURITY</code> (Strict). Table owners cannot bypass RLS.</li>
+<li>  <b>Predicate</b>: Membership Check via <code style="background:#e0e0e0; padding:2px;">tenant_users</code>.</li>
+<br/>
+<p><b>Standard Policy Pattern (Select):</b><br/><pre>sql<br/>USING (<br/>  exists (<br/>    select 1 from public.tenant_users<br/>    where tenant_id = current_table.tenant_id<br/>    and user_id = auth.uid()<br/>  )<br/>)<br/></pre></p>
+<br/>
+<h2>6.2. Write Protection (<code style="background:#e0e0e0; padding:2px;">edit_locks</code>)</h2>
+<br/>
+<p>For the critical <code style="background:#e0e0e0; padding:2px;">edit_locks</code> table, security is managed via <b>RPC-Only Mutations</b>.</p>
+<br/>
+<p>1.  <b>Table Permissions</b>:<br/>    -   <code style="background:#e0e0e0; padding:2px;">authenticated</code>: <code style="background:#e0e0e0; padding:2px;">GRANT SELECT</code> ONLY.<br/>    -   <code style="background:#e0e0e0; padding:2px;">REVOKE</code> INSERT/UPDATE/DELETE.<br/>2.  <b>Implication</b>: Even if RLS allows a write, the standard SQL privileges block it. This forces writes to go through approved RPCs.</p>
+<br/>
+<h2>6.3. Trusted RPCs (Security Definer)</h2>
+<br/>
+<p>Specific operations (<code style="background:#e0e0e0; padding:2px;">acquire_edit_lock</code>, <code style="background:#e0e0e0; padding:2px;">release_edit_lock</code>) run with <code style="background:#e0e0e0; padding:2px;">SECURITY DEFINER</code> privileges to perform operations that users shouldn't do directly (or to ensure atomic logic).</p>
+<br/>
+<p><b>Safety Measures:</b><br/>1.  <b>Search Path</b>: Explicitly set to <code style="background:#e0e0e0; padding:2px;">public, auth</code> to prevent search path hijacking.<br/>2.  <b>Explicit Membership Check</b>: The function manually re-verifies <code style="background:#e0e0e0; padding:2px;">tenant_users</code> membership at the very start of execution.<br/>    <pre>sql<br/>    if not exists (select 1 from public.tenant_users ...) then raise exception ...<br/>    </pre><br/>3.  <b>Explicit Revoke</b>: <code style="background:#e0e0e0; padding:2px;">REVOKE ALL</code> from <code style="background:#e0e0e0; padding:2px;">public, anon</code> ensures only authenticated users can trigger the function.</p>
+<br/>
+<h2>6.4. Trust Boundaries</h2>
+<br/>
+<p>1.  <b>Application</b>: Untrusted. Can request anything.<br/>2.  <b>Repository</b>: Trusted to format request, but strictly scoped to User Auth.<br/>3.  <b>Database (RLS)</b>: Trusted Final Enforcer. returns empty sets if App requests wrong tenant.<br/>4.  <b>RPC</b>: Trusted Atomic Unit. Verified by SQL logic.<br/></p>
+        
+        <div style="page-break-before: always;"></div>
+        <h1>File: 07_EDIT_LOCKS_MODEL.md</h1>
+        <hr/>
+        <h1>7. Edit Locks Model (Phase 3 Strict)</h1>
+<br/>
+<h2>7.1. Concept</h2>
+Provides mutually exclusive, short-lived locks on entities to prevent concurrent edit conflicts in a multi-user environment.
+<br/>
+<h2>7.2. Schema (<code style="background:#e0e0e0; padding:2px;">edit_locks</code>)</h2>
+<li>  <b>Key</b>: <code style="background:#e0e0e0; padding:2px;">(tenant_id, entity_type, entity_id)</code></li>
+<li>  <b>Owner</b>: <code style="background:#e0e0e0; padding:2px;">locked_by</code> (User UUID)</li>
+<li>  <b>Time</b>: <code style="background:#e0e0e0; padding:2px;">locked_at</code> (Acquisition/Refresh), <code style="background:#e0e0e0; padding:2px;">expires_at</code> (Absolute Validity)</li>
+<br/>
+<h3>System Invariant</h3>
+<b>Invariant</b>: At most one active lock per <code style="background:#e0e0e0; padding:2px;">(tenant_id, entity_type, entity_id)</code>.
+This uniqueness is structurally enforced by:
+1.  <b>Composite Primary Key</b>: The database schema physically prevents duplicate rows for the same entity.
+2.  <b>Row-Level Locking</b>: PostgreSQL serialization ensures concurrent attempts queue for the same row.
+3.  <b>Atomic Upsert</b>: <code style="background:#e0e0e0; padding:2px;">INSERT ... ON CONFLICT</code> provides atomic "check-and-set" semantics.
+<br/>
+<h2>7.3. Lock Acquisition Logic (RPC)</h2>
+<br/>
+<p>The <code style="background:#e0e0e0; padding:2px;">acquire_edit_lock</code> RPC implements an atomic "Check-and-Set" or "Steal-if-Expired" logic.</p>
+<br/>
+<p><b>State Transition Table:</b></p>
+<br/>
+<p>| Existing State | User Checks | Override? | Result |<br/>| :--- | :--- | :--- | :--- |<br/>| <b>None</b> | - | - | <b>Acquired</b> (Insert) |<br/>| <b>Locked (Expired)</b> | - | - | <b>Acquired</b> (Takeover) |<br/>| <b>Locked (Active)</b> | Same User | - | <b>Refreshed</b> (Extend TTL) |<br/>| <b>Locked (Active)</b> | Diff User | False | <b>Denied</b> (Fail) |<br/>| <b>Locked (Active)</b> | Diff User | True | <b>Acquired</b> (Steal) |</p>
+<br/>
+<h3>RBAC Boundary Clarification</h3>
+<li>  <b>RPC Responsibility</b>: The RPC strictly validates <b>Tenant Membership</b> (<code style="background:#e0e0e0; padding:2px;">tenant_id</code> exists in <code style="background:#e0e0e0; padding:2px;">tenant_users</code>).</li>
+<li>  <b>App Responsibility</b>: The Application Layer MUST verify <b>RBAC Permissions</b> (e.g., <code style="background:#e0e0e0; padding:2px;">locks.override</code> or super-admin powers).</li>
+<li>  <b>Security Boundary</b>: The RPC does <b>NOT</b> evaluate <code style="background:#e0e0e0; padding:2px;">locks.override</code> permissions. It trusts the <code style="background:#e0e0e0; padding:2px;">override</code> boolean passed by the App (which is why the App must authorize it first).</li>
+<br/>
+<h2>7.4. Operational Guarantees</h2>
+<br/>
+<h3>Deadlock Safety</h3>
+Deadlocks are structurally impossible for this feature because:
+1.  <b>Single Row Context</b>: Operations affect exactly one row in one table (<code style="background:#e0e0e0; padding:2px;">edit_locks</code>) via Primary Key.
+2.  <b>No Multi-Table Writes</b>: The RPC does not write to other tables.
+3.  <b>No Lock Chains</b>: There are no dependencies on other locks.
+<br/>
+<h3>Expiration Model</h3>
+<li>  <b>Lazy Expiration</b>: Expired locks are <b>NOT</b> proactively cleaned by a background worker.</li>
+<li>  <b>Overwrite Logic</b>: They are lazily overwritten by the next <code style="background:#e0e0e0; padding:2px;">acquire</code> attempt.</li>
+<li>  <b>Correctness</b>: No background job is required for system correctness.</li>
+<br/>
+<h3>Clock Source</h3>
+<li>  <b>Single Source of Truth</b>: Lock validity is based <b>exclusively</b> on the Database Server time (<code style="background:#e0e0e0; padding:2px;">now()</code>).</li>
+<li>  <b>Skew Safety</b>: Application server clock skew does not affect lock correctness or expiration logic.</li>
+<br/>
+<h2>7.5. Release Logic</h2>
+<br/>
+<p><code style="background:#e0e0e0; padding:2px;">release_edit_lock</code> is safe/idempotent:<br/><li>  Deletes current lock <b>IF AND ONLY IF</b> <code style="background:#e0e0e0; padding:2px;">locked_by</code> matches <code style="background:#e0e0e0; padding:2px;">auth.uid()</code>.</li><br/><li>  Prevents users from unlocking each other's work (unless using an override path in <code style="background:#e0e0e0; padding:2px;">acquire</code>, but explicit release is strict).</li><br/></p>
+        
+        <div style="page-break-before: always;"></div>
+        <h1>File: 08_FAILURE_MODES.md</h1>
+        <hr/>
+        <h1>8. Failure Modes & Handling</h1>
+<br/>
+<h2>8.1. Authorized Resolution Failures</h2>
+<br/>
+<p>| Scenario | Detection | System Behavior |<br/>| :--- | :--- | :--- |<br/>| <b>Unauthenticated</b> | No session found | <b>Redirect</b> to <code style="background:#e0e0e0; padding:2px;">/login</code>. |<br/>| <b>Invalid Slug (Step 1 Fail)</b> | Slug not found in <code style="background:#e0e0e0; padding:2px;">tenants</code> table | <b>Return 404 Not Found</b>. (Never redirect authenticated users). |<br/>| <b>No Membership (Step 2 Fail)</b> | Tenant exists, but user not in <code style="background:#e0e0e0; padding:2px;">tenant_users</code> | <b>Return 404 Not Found</b> or <b>403 Forbidden</b>. |<br/>| <b>Ambiguous Implicit</b> | No slug provided, <code style="background:#e0e0e0; padding:2px;">tenant_users</code> count > 1 | <b>Redirect</b> to <code style="background:#e0e0e0; padding:2px;">/admin/select-tenant</code> OR <b>409 Conflict</b>. |<br/>| <b>No Tenants (Implicit)</b> | No slug provided, <code style="background:#e0e0e0; padding:2px;">tenant_users</code> count = 0 | <b>Return 403 Forbidden</b> or <b>404 Not Found</b> (Fail-Closed). |</p>
+<br/>
+<h2>8.2. Authorization, Activation & Routing Failures</h2>
+<br/>
+<p>| Scenario | Detection | System Behavior |<br/>| :--- | :--- | :--- |<br/>| <b>Route Not Found</b> | <code style="background:#e0e0e0; padding:2px;">resolveRoute</code> returns null | <b>Return 404 Not Found</b>. |<br/>| <b>Inactive Module</b> | <code style="background:#e0e0e0; padding:2px;">system.isActive</code> check fails | <b>Return 404 Not Found</b>. (Prevent state leakage). |<br/>| <b>Tenant Disabled</b> | <code style="background:#e0e0e0; padding:2px;">tenant_modules</code> check fails | <b>Return 404 Not Found</b>. (Security through obscurity). |<br/>| <b>RBAC Denied</b> | <code style="background:#e0e0e0; padding:2px;">canAccessModule</code> returns false | <b>Return 404 Not Found</b>. (Security through obscurity). |<br/>| <b>Invariant Failure</b> | Undefined <code style="background:#e0e0e0; padding:2px;">tenantId</code> / <code style="background:#e0e0e0; padding:2px;">UserContext</code> | <b>Throw 500 Error</b>. (Strict Safety boundary). |</p>
+<br/>
+<h2>8.3. Data Access Failures</h2>
+<br/>
+<p>| Scenario | Detection | System Behavior |<br/>| :--- | :--- | :--- |<br/>| <b>RLS Violation</b> | Query returns empty set (After Explicit Filter) | Application treats as "Not Found" (<code style="background:#e0e0e0; padding:2px;">null</code>). |<br/>| <b>Missing TenantID</b> | Repository Check | <b>Throw Error</b>. (Prevents Query Execution). |<br/>| <b>Unscoped Method</b> | Method Call Without TenantID | <b>Throw Error</b>. (Strict Prohibition). |<br/>| <b>DB Unreachable</b> | Supabase Client Error | <b>Throw Error</b> / 500 Page. |</p>
+<br/>
+<p>> <b>Invariant</b>: Empty result set MUST only be treated as "Not Found" after explicit tenant filtering is applied. An empty result from an unscoped query is a critical security failure, not a 404.</p>
+<br/>
+<h2>8.4. Edit Lock Failures</h2>
+<br/>
+<p>| Scenario | Detection | System Behavior |<br/>| :--- | :--- | :--- |<br/>| <b>Lock Held (Business Logic)</b> | RPC returns <code style="background:#e0e0e0; padding:2px;">success: false</code> | UI enters <b>Read-Only Mode</b>. (Expected State). |<br/>| <b>RPC Error</b> | Repository catch | <b>Throw Error</b>. UI prevents editing (Safety). |<br/>| <b>Invalid TTL</b> | RPC Exception | <b>Throw Error</b>. Request Rejected. |<br/>| <b>Concurrent Race</b> | DB Row Lock | Requests queue; winner resolved deterministically by DB. |</p>
+<br/>
+<h2>8.6. 2FA & Session Failures</h2>
+<br/>
+<p>| Scenario | Detection | System Behavior | Evidence Location |<br/>| :--- | :--- | :--- | :--- |<br/>| <b>Cookie Missing</b> | Middleware / Guard | <b>Redirect</b> to <code style="background:#e0e0e0; padding:2px;">/admin/t/[slug]/2fa?reason=missing_cookie</code>. | <code style="background:#e0e0e0; padding:2px;">src/core/security/serverGuard.ts:23</code> |<br/>| <b>Invalid Signature</b> | <code style="background:#e0e0e0; padding:2px;">verifyTwoFaCookie</code> fails | <b>Redirect</b> to <code style="background:#e0e0e0; padding:2px;">/admin/t/[slug]/2fa?reason=invalid_signature</code>. | <code style="background:#e0e0e0; padding:2px;">src/core/security/serverGuard.ts:30</code> |<br/>| <b>Tenant Mismatch</b> | Payload <code style="background:#e0e0e0; padding:2px;">tenantId</code> != Request | <b>Redirect</b> to <code style="background:#e0e0e0; padding:2px;">/admin/t/[slug]/2fa?reason=tenant_mismatch</code>. | <code style="background:#e0e0e0; padding:2px;">src/core/security/serverGuard.ts:36</code> |<br/>| <b>Session Revoked</b> | DB Check (<code style="background:#e0e0e0; padding:2px;">validate_twofa_session</code>) | <b>Redirect</b> to <code style="background:#e0e0e0; padding:2px;">/admin/t/[slug]/2fa?reason=session_revoked</code>. | <code style="background:#e0e0e0; padding:2px;">src/core/security/serverGuard.ts:47</code> |<br/>| <b>Token Expired</b> | JWT/Cookie TTL | <b>Redirect</b> to Login. | Standard Auth Flow. |</p>
+<br/>
+<p>> <b>Note</b>: "Lock Held" is a controlled business outcome, not a system failure condition.</p>
+<br/>
+<h2>8.5. General Philosophy</h2>
+<br/>
+<p>The system adheres to <b>Fail-Closed</b>.<br/><li>  If it's not explicitly allowed, it represents an error/attack.</li><br/><li>  It is better to show an error screen than to leak data or allow corrupt writes.</li><br/><li>  Ambiguity is treated as a security risk.</li><br/></p>
+        
+        <div style="page-break-before: always;"></div>
+        <h1>File: 09_VERIFICATION_MODEL.md</h1>
+        <hr/>
+        <h1>9. Verification Model</h1>
+<br/>
+<p>Strict automated commands verify the architectural invariants. These commands must pass before any release.</p>
+<br/>
+<h2>9.1. Security Boundary Verification</h2>
+<br/>
+<p><b>Command</b>: Server-Admin Leak Check<br/><pre>bash<br/>! grep -r "server-admin" src/app src/core src/infra | grep -v "seed" | grep -v "migration"<br/></pre><br/><li>  <b>Guarantee</b>: The powerful <code style="background:#e0e0e0; padding:2px;">service_role</code> key is NOT used in the application runtime flow. It is restricted to seeding/migrations.</li></p>
+<br/>
+<p><b>Command</b>: Admin Client Prohibition Check<br/><pre>bash<br/>! grep -r "createAdminClient" src/app src/modules src/core<br/></pre><br/><li>  <b>Guarantee</b>: Strictly prohibits <code style="background:#e0e0e0; padding:2px;">createAdminClient</code> usage in runtime code.</li></p>
+<br/>
+<p><b>Command</b>: Direct Write Check (<code style="background:#e0e0e0; padding:2px;">edit_locks</code>)<br/><pre>bash<br/>! grep -R "from(['\"]edit_locks['\"])" -n src | grep -E "insert|update|delete"<br/></pre><br/><li>  <b>Guarantee</b>: No application code bypasses the RPCs to modify locks directly.</li></p>
+<br/>
+<p><b>Command</b>: In-Memory Filtering Prevention<br/><pre>bash<br/>! grep -r "\.filter(.*tenant_id" src<br/></pre><br/><li>  <b>Guarantee</b>: Ensures no <code style="background:#e0e0e0; padding:2px;">tenant_id</code> filtering happens in application memory (after query execution). Relies on repository-level SQL constraints.</li></p>
+<br/>
+<p><b>Command</b>: Critical TODO Check<br/><pre>bash<br/>! grep -rE "TODO|FIXME" src/core/security src/db/migrations<br/></pre><br/><li>  <b>Guarantee</b>: No unresolved technical debt in critical security paths.</li></p>
+<br/>
+<p><b>Command</b>: Canonical Routing Enforcement<br/><pre>bash<br/>! grep -R --fixed-strings "?tenant=" src/app src/modules<br/>! grep -r "searchParams.get('tenant')" src/app src/modules<br/></pre><br/><li>  <b>Guarantee</b>: Prohibits usage of <code style="background:#e0e0e0; padding:2px;">?tenant=</code> query parameter or <code style="background:#e0e0e0; padding:2px;">searchParams</code> usage in UI routing.</li></p>
+<br/>
+<p><b>Command</b>: Tenant Resolution Encapsulation<br/><pre>bash<br/>grep -R "resolveTenantForUser" -n src | grep -v "src/core/context/resolveAuthContext.ts"<br/></pre><br/><li>  <b>Guarantee</b>: Ensures <code style="background:#e0e0e0; padding:2px;">resolveTenantForUser</code> is only called within the central <code style="background:#e0e0e0; padding:2px;">resolveAuthContext</code> allowed path.</li></p>
+<br/>
+<h2>9.2. Tenant Isolation Verification</h2>
+<br/>
+<p><b>Command</b>: Tenant Filter Check<br/><pre>bash<br/>grep -R ".eq(['\"]tenant_id['\"]" -n src/infra/repositories/<br/></pre><br/><li>  <b>Guarantee</b>: Inspects repositories to ensure explicit <code style="background:#e0e0e0; padding:2px;">.eq('tenant_id', ...)</code> usage.</li></p>
+<br/>
+<h2>9.3. Function Security Verification</h2>
+<br/>
+<p><b>Command</b>: Security Definer Check<br/><pre>bash<br/>grep -R "security definer" -n src/db/migrations<br/></pre><br/><li>  <b>Guarantee</b>: confirms RPCs are elevated correctly.</li></p>
+<br/>
+<p><b>Command</b>: Excessive Privilege Check<br/><pre>bash<br/>grep -R "revoke all on function .* from public, anon" -n src/db/migrations<br/></pre><br/><li>  <b>Guarantee</b>: Confirms that strict <code style="background:#e0e0e0; padding:2px;">REVOKE</code> statements exist for sensitive RPCs.</li></p>
+<br/>
+<p><b>Command</b>: Manual Membership Revalidation Check<br/><pre>bash<br/>grep -R "select 1 from public.tenant_users" -n src/db/migrations<br/></pre><br/><li>  <b>Guarantee</b>: Confirms that RPCs manually re-verify tenant membership at the start of execution.</li></p>
+<br/>
+<p><b>Command</b>: FORCE RLS Check<br/><pre>bash<br/>grep -R "force row level security" -n src/db/migrations<br/></pre><br/><li>  <b>Guarantee</b>: Confirms that <b>FORCE ROW LEVEL SECURITY</b> is enabled on sensitive tables, preventing table owners from bypassing policies.</li></p>
+<br/>
+<h2>9.4. RBAC & Module Verification</h2>
+<br/>
+<p><b>Command</b>: No Roles in Module Check<br/><pre>bash<br/>! grep -r "requiredRoles" src/modules<br/></pre><br/><li>  <b>Guarantee</b>: Ensures modules rely on Permissions, not Roles.</li></p>
+<br/>
+<p><b>Command</b>: Module Authorization Boundary<br/><pre>bash<br/>! grep -R "canAccessModule" -n src/modules<br/></pre><br/><li>  <b>Guarantee</b>: Modules cannot self-authorize. <code style="background:#e0e0e0; padding:2px;">canAccessModule</code> must only be used in the routing boundary / layout layer.</li></p>
+<br/>
+<p><b>Command</b>: Module Isolation Check<br/><pre>bash<br/>! grep -r "from '@/modules/" src/modules<br/></pre><br/><li>  <b>Guarantee</b>: Ensures NO cross-module imports. Modules must only import from <code style="background:#e0e0e0; padding:2px;">src/core</code>, <code style="background:#e0e0e0; padding:2px;">src/shared</code>, or their own internal files.</li></p>
+<br/>
+<h2>9.5. Build Integrity</h2>
+<br/>
+<p><b>Command</b>: Build<br/><pre>bash<br/>npm run build<br/></pre><br/><li>  <b>Guarantee</b>: TypeScript types match, no import errors, Next.js optimization succeeds.</li></p>
+<br/>
+<h2>9.6. Release Gate Rule</h2>
+<br/>
+<p><b>Mandatory Pre-Release Checklist</b>:</p>
+<br/>
+<p>1.  <b>Architecture</b>: All <code style="background:#e0e0e0; padding:2px;">grep</code> checks must return clean (or expected) results.<br/>2.  <b>Logic</b>: <code style="background:#e0e0e0; padding:2px;">npm run build</code> must succeed without warnings.<br/>3.  <b>State</b>: No "TODO" or "FIXME" comments in critical security paths (<code style="background:#e0e0e0; padding:2px;">src/core/security</code>, <code style="background:#e0e0e0; padding:2px;">src/db</code>).<br/>4.  <b>Database</b>: All migrations must be applied and idempotent.</p>
+<br/>
+<p><b>Invariant</b>: NO deployment may proceed if any of the above checks fail.</p>
+<br/>
+<h2>9.7. Business Hierarchy Verification (Strict)</h2>
+<br/>
+<p><b>Command</b>: No Direct SQL Writes<br/><pre>bash<br/>! grep -R "from(['\"]companies['\"])" src | grep -E "insert|update|delete"<br/>! grep -R "from(['\"]organizations['\"])" src | grep -E "insert|update|delete"<br/>! grep -R "from(['\"]projects['\"])" src | grep -E "insert|update|delete"<br/>! grep -R "from(['\"]service_offerings['\"])" src | grep -E "insert|update|delete"<br/></pre><br/><li>  <b>Guarantee</b>: Hierarchy tables are strictly locked down.</li></p>
+<br/>
+<p><b>Command</b>: RPC Existence Check<br/><pre>bash<br/>grep -R "create or replace function public.create_group" src/db/migrations<br/>grep -R "create or replace function public.create_organization" src/db/migrations<br/>grep -R "create or replace function public.create_company" src/db/migrations<br/></pre><br/><li>  <b>Guarantee</b>: verifies that mandatory RPCs are defined in migrations.</li></p>
+<br/>
+<p><b>Command</b>: Hierarchy Force RLS<br/><pre>bash<br/>grep -R "force row level security" src/db/migrations | grep -E "companies|organizations|projects|service_offerings"<br/></pre><br/><li>  <b>Guarantee</b>: Hierarchy tables are strictly locked down.</li></p>
+<br/>
+<li>  <b>Guarantee</b>: Hierarchy tables are strictly locked down.</li>
+<br/>
+<h2>9.8. 2FA Verification (Strict Evidence)</h2>
+<br/>
+<p><b>Command</b>: HEX Signature & Timing Safe Check<br/><pre>bash<br/>grep "bufferToHex" src/core/security/twofaCookie.ts<br/>grep "crypto.subtle.verify" src/core/security/twofaCookie.ts<br/>! grep "Buffer.from" src/core/security/twofaCookie.ts<br/></pre><br/><li>  <b>Guarantee</b>: Ensures signatures are HEX encoded, compared using Web Crypto, and NO Node.js Buffer usage.</li></p>
+<br/>
+<p><b>Command</b>: Payload Tenant Binding Check<br/><pre>bash<br/>grep "tenantId: string;" src/core/security/twofaCookie.ts<br/></pre><br/><li>  <b>Guarantee</b>: Payload structure MUST include strict <code style="background:#e0e0e0; padding:2px;">tenantId</code>.</li></p>
+<br/>
+<p><b>Command</b>: Guard Enforcement Check<br/><pre>bash<br/>grep "requireTwoFaVerified" src/app/\(admin\)/admin/t/\[tenantSlug\]/\[\[...slug\]\]/page.tsx<br/></pre><br/><li>  <b>Guarantee</b>: The <code style="background:#e0e0e0; padding:2px;">TenantPage</code> component enforces 2FA verification before rendering.</li></p>
+<br/>
+<p><b>Command</b>: Transport Gate Check<br/><pre>bash<br/>grep "verifyTwoFaCookie" src/middleware.ts<br/></pre><br/><li>  <b>Guarantee</b>: Middleware performs a transport-level check to fail fast.</li></p>
+<br/>
+<p><b>Command</b>: No Global 2FA Route<br/><pre>bash<br/>[ ! -d src/app/2fa ] && echo "PASS: No global 2fa route"<br/></pre><br/><li>  <b>Guarantee</b>: 2FA routes are strictly tenant-scoped under <code style="background:#e0e0e0; padding:2px;">/admin/t/[slug]/2fa</code>.</li></p>
+<br/>
+<p><b>Command</b>: RPC Existence & Security Check<br/><pre>bash<br/>grep -ir "create or replace function public.validate_twofa_session" src/db/migrations<br/>grep -ir "set search_path = public, extensions, auth" src/db/migrations<br/></pre><br/><li>  <b>Guarantee</b>: The <code style="background:#e0e0e0; padding:2px;">validate_twofa_session</code> RPC exists and uses strict search path.</li></p>
+<br/>
+<h2>9.9. I18n Verification (Strict)</h2>
+<br/>
+<p><b>Command</b>: Paranoid I18n Audit<br/><pre>bash<br/>./src/scripts/verify_i18n_strictness.sh<br/></pre><br/><li>  <b>Guarantee</b>: Enforces the following invariants:</li><br/>    1.  <b>Core Purity</b>: <code style="background:#e0e0e0; padding:2px;">src/core</code> never imports <code style="background:#e0e0e0; padding:2px;">src/shared/i18n</code>.<br/>    2.  <b>Module Isolation</b>: <code style="background:#e0e0e0; padding:2px;">src/shared/i18n</code> never imports module-specific locales.<br/>    3.  <b>No Middleware Logic</b>: Middleware does not resolve or inject locales (Auth only).<br/>    4.  <b>Zero Dependencies</b>: No <code style="background:#e0e0e0; padding:2px;">i18next</code> or external libraries allowed.</p>
+<br/>
+<p><b>Command</b>: Manual Core Check<br/><pre>bash<br/>! grep -r "from '@/shared/i18n'" src/core<br/></pre><br/><li>  <b>Guarantee</b>: Double-check that Core remains 100% translation-agnostic.</li></p>
+<br/>
+<p></p>
+        
+        <div style="page-break-before: always;"></div>
+        <h1>File: 10_SECURITY_MODEL.md</h1>
+        <hr/>
+        <h1>10. Security Model</h1>
+<br/>
+<h2>10.1. Authentication & Identity</h2>
+<br/>
+<p>The system utilizes <b>Supabase Auth</b> as the identity provider, but enforces strict architectural isolation between Identity (Who you are) and Access (What you can do).</p>
+<br/>
+<h3>Core Components</h3>
+<li>  <b>Identity Provider</b>: Supabase Auth (handles JWTs, emails, passwords).</li>
+<li>  <b>Session Cookie</b>: <code style="background:#e0e0e0; padding:2px;">sb-</code> tokens managed by Supabase helpers.</li>
+<li>  <b>Transport Gate</b>: <code style="background:#e0e0e0; padding:2px;">src/middleware.ts</code> validates the presence of auth tokens before any application logic runs.</li>
+<br/>
+<h3>Invariant</h3>
+> <b>No Implicit Access</b>: Being authenticated with Supabase grants <b>zero</b> permissions. It only establishes Identity. All access requires explicit Tenant Membership checks.
+<br/>
+<h2>10.2. Tenant Resolution Flow</h2>
+<br/>
+<p>Tenant Context is <b>never</b> global. It is resolved strictly per request based on the URL.</p>
+<br/>
+<p>1.  <b>URL Parsing</b>: <code style="background:#e0e0e0; padding:2px;">/admin/t/[tenantSlug]/...</code><br/>2.  <b>Resolution</b>: <code style="background:#e0e0e0; padding:2px;">resolveAuthContext</code> looks up the Tenant ID by Slug.<br/>3.  <b>Membership Check</b>: Verifies the user exists in <code style="background:#e0e0e0; padding:2px;">tenant_users</code>.<br/>4.  <b>Fail-Closed</b>: If any step fails -> 404/403 (No "default tenant" fallback).</p>
+<br/>
+<h2>10.3. Strict 2FA (Variant A)</h2>
+<br/>
+<p>For high-security operations, the system enforces a secondary, tenant-scoped authentication layer.</p>
+<br/>
+<h3>Architecture</h3>
+<br/>
+<li>  <b>Scope</b>: Per-Tenant. (Auth in Tenant A does NOT authorize Tenant B).</li>
+<li>  <b>Route</b>: <code style="background:#e0e0e0; padding:2px;">/admin/t/[tenantSlug]/2fa</code> (Canonical Interface).</li>
+<li>  <b>Persistence</b>: <code style="background:#e0e0e0; padding:2px;">2fa_session</code> cookie (Signed, HTTPOnly, Secure, SameSite=Lax).</li>
+<li>  <b>Storage</b>: DB-backed <code style="background:#e0e0e0; padding:2px;">twofa_sessions</code> table (Allows server-side revocation).</li>
+<br/>
+<h3>The Flow</h3>
+<br/>
+<p>1.  <b>User Access</b>: Code attempts to access a protected route.<br/>2.  <b>Middleware Gate</b>: Checks for valid <code style="background:#e0e0e0; padding:2px;">2fa_session</code> cookie matching <code style="background:#e0e0e0; padding:2px;">tenantSlug</code>.<br/>    *   <b>Evidence</b>: <code style="background:#e0e0e0; padding:2px;">src/middleware.ts</code> (Lines 34-42) - Reads cookie, verifies signature, checks slug.<br/>    *   <b>Heuristic</b>: Middleware does <b>NOT</b> query the DB. It only parses the signed cookie.<br/>3.  <b>Challenge</b>: If invalid/missing, redirects to <code style="background:#e0e0e0; padding:2px;">/admin/t/[tenantSlug]/2fa</code>.<br/>4.  <b>Creation</b>: User requests code -> <code style="background:#e0e0e0; padding:2px;">create_login_challenge</code> (RPC) -> Email.<br/>    *   <b>Evidence</b>: <code style="background:#e0e0e0; padding:2px;">src/app/(admin)/admin/t/[tenantSlug]/2fa/actions.ts</code> calls RPC <code style="background:#e0e0e0; padding:2px;">create_login_challenge</code>.<br/>5.  <b>Verification</b>: User submits code -> <code style="background:#e0e0e0; padding:2px;">verify_login_challenge</code> (RPC).<br/>    *   <b>Evidence</b>: <code style="background:#e0e0e0; padding:2px;">src/app/(admin)/admin/t/[tenantSlug]/2fa/actions.ts</code> calls RPC <code style="background:#e0e0e0; padding:2px;">verify_login_challenge</code>.<br/>6.  <b>Binding</b>: Server issues generic signed cookie using DB Session ID.<br/>    *   <b>Evidence</b>: <code style="background:#e0e0e0; padding:2px;">src/app/(admin)/admin/t/[tenantSlug]/2fa/actions.ts</code> (Lines 62-83) - Sets <code style="background:#e0e0e0; padding:2px;">2fa_session</code> cookie.</p>
+<br/>
+<h3>Security Invariants</h3>
+<br/>
+<p>1.  <b>RPC-Only Writes</b>:<br/>    *   <code style="background:#e0e0e0; padding:2px;">create_login_challenge</code> and <code style="background:#e0e0e0; padding:2px;">verify_login_challenge</code> are <code style="background:#e0e0e0; padding:2px;">SECURITY DEFINER</code> functions.<br/>    *   <code style="background:#e0e0e0; padding:2px;">search_path</code> is strictly locked to <code style="background:#e0e0e0; padding:2px;">public, extensions, auth</code>.<br/>    *   Public access is revoked; only <code style="background:#e0e0e0; padding:2px;">authenticated</code> role can execute.</p>
+<br/>
+<p>2.  <b>Dual-Layer Verification</b>:<br/>    *   <b>Layer 1 (Transport)</b>: Middleware checks cookie signature and tenant slug.<br/>        *   <b>Evidence</b>: <code style="background:#e0e0e0; padding:2px;">src/middleware.ts</code> -> <code style="background:#e0e0e0; padding:2px;">verifyTwoFaCookie</code>.<br/>    *   <b>Layer 2 (Truth)</b>: <code style="background:#e0e0e0; padding:2px;">serverGuard</code> checks DB for session validity (Revocation/Replay).<br/>        *   <b>Evidence</b>: <code style="background:#e0e0e0; padding:2px;">src/core/security/serverGuard.ts</code> calls <code style="background:#e0e0e0; padding:2px;">validate_twofa_session</code> RPC.<br/>        *   <b>Enforcement</b>: <code style="background:#e0e0e0; padding:2px;">src/app/(admin)/admin/t/[tenantSlug]/[[...slug]]/page.tsx</code> calls <code style="background:#e0e0e0; padding:2px;">requireTwoFaVerified</code>.</p>
+<br/>
+<p>3.  <b>Crypto & Payload</b>:<br/>    *   <b>HMAC SHA256</b>: Signatures are HEX encoded.<br/>        *   <b>Evidence</b>: <code style="background:#e0e0e0; padding:2px;">src/core/security/twofaCookie.ts</code> -> <code style="background:#e0e0e0; padding:2px;">digest('hex')</code>.<br/>    *   <b>Timing Safe</b>: Comparisons use <code style="background:#e0e0e0; padding:2px;">timingSafeEqual</code>.<br/>        *   <b>Evidence</b>: <code style="background:#e0e0e0; padding:2px;">src/core/security/twofaCookie.ts</code> -> <code style="background:#e0e0e0; padding:2px;">timingSafeEqual</code>.<br/>    *   <b>Payload</b>: Contains <code style="background:#e0e0e0; padding:2px;">tenantId</code>, <code style="background:#e0e0e0; padding:2px;">tenantSlug</code>, <code style="background:#e0e0e0; padding:2px;">userId</code>, <code style="background:#e0e0e0; padding:2px;">sessionId</code>, <code style="background:#e0e0e0; padding:2px;">iat</code>, <code style="background:#e0e0e0; padding:2px;">exp</code>.<br/>        *   <b>Evidence</b>: <code style="background:#e0e0e0; padding:2px;">src/core/security/twofaCookie.ts</code> (Interface <code style="background:#e0e0e0; padding:2px;">TwoFaPayload</code>).</p>
+<br/>
+<p>4.  <b>Session Rotation</b>:<br/>    *   Every successful verification <b>invalidates all previous 2FA sessions</b> for that user/tenant.<br/>        *   <b>Evidence</b>: <code style="background:#e0e0e0; padding:2px;">verify_login_challenge</code> RPC (SQL) updates <code style="background:#e0e0e0; padding:2px;">revoked_at</code> for old sessions.<br/>        *   <b>Logic</b>: <code style="background:#e0e0e0; padding:2px;">UPDATE public.twofa_sessions SET revoked_at = now() ...</code>.</p>
+<br/>
+<h2>10.4. RBAC Separation</h2>
+<br/>
+<p>The system enforces a strict "No Inheritance" model for RBAC.</p>
+<br/>
+<h3>Tenant RBAC (<code style="background:#e0e0e0; padding:2px;">tenant_roles</code>)</h3>
+<li>  Controls access to tenant-level modules (e.g., Dashboard, Settings).</li>
+<li>  managed via <code style="background:#e0e0e0; padding:2px;">tenant_users</code> -> <code style="background:#e0e0e0; padding:2px;">tenant_roles</code> -> <code style="background:#e0e0e0; padding:2px;">permissions</code>.</li>
+<br/>
+<h3>Company RBAC (<code style="background:#e0e0e0; padding:2px;">company_roles</code>)</h3>
+<li>  Controls access to specific Business Hierarchy nodes.</li>
+<li>  <b>Completely Independent</b> of Tenant Roles.</li>
+<li>  Being a Tenant Admin does <b>not</b> automatically grant Company Admin rights (Explicit Grant required).</li>
+<li>  Managed via <code style="background:#e0e0e0; padding:2px;">company_users</code>.</li>
+<br/>
+<h3>RPC-Only Mutation</h3>
+<li>  All RBAC changes (Add User, Grant Permission) MUST go through strict RPCs.</li>
+<li>  Direct <code style="background:#e0e0e0; padding:2px;">INSERT</code> into permission tables is blocked by RLS.</li>
+<br/>
+<h2>10.5. Fail-Closed Principles</h2>
+<br/>
+<li>  <b>Missing Cookie</b>: Redirect to Login/2FA.</li>
+<li>  <b>Invalid Slug</b>: 404 Not Found.</li>
+<li>  <b>Revoked Session</b>: DB check inside the application context fails -> Redirect.</li>
+<li>  <b>Middleware</b>: If it can't verify -> It denies.</li>
+<br/>
+<h2>10.6. I18n Isolation</h2>
+<br/>
+<p>The translation system is strictly a <b>Presentation Layer</b> concern and must <b>never</b> intersect with Security Logic.</p>
+<br/>
+<p>1.  <b>No Auth Coupling</b>: I18n logic does not have access to the <code style="background:#e0e0e0; padding:2px;">AuthContext</code> or <code style="background:#e0e0e0; padding:2px;">UserContext</code>. It reads raw cookies only.<br/>2.  <b>No RBAC Coupling</b>: "Access Denied" messages are translated <b>after</b> the security check fails. The check itself is language-agnostic.<br/>3.  <b>Core Purity</b>: The <code style="background:#e0e0e0; padding:2px;">src/core</code> domain model uses Error Codes (e.g., <code style="background:#e0e0e0; padding:2px;">AUTH_DENIED</code>, <code style="background:#e0e0e0; padding:2px;">INVALID_SLUG</code>), never translated strings.</p>
+<br/>
+<p></p>
+        
+        <div style="page-break-before: always;"></div>
+        <h1>File: 11_MENUS_AND_VARIANTS.md</h1>
+        <hr/>
+        <h1>11. Organization Menu & Variants System (Strict)</h1>
+<br/>
+<h2>11.1. Conceptual Model & SaaS Boundary</h2>
+<br/>
+<p>The Organization Menu System defines the <b>SaaS Boundary</b> within the Multi-Tenant architecture. It strictly enforces the hierarchy: <b>Tenant > Organization > Section > App</b>.</p>
+<br/>
+<h3>11.1.1. Tenant vs. Organization Scope</h3>
+<li>  <b>Tenant as Container</b>: The Tenant is a passive container for data and users. It <b>DOES NOT</b> define the application structure, menu, or available features.</li>
+<li>  <b>Organization as SaaS Universe</b>: The Organization is the active SaaS boundary. It defines:</li>
+    *   Which Modules are active.
+    *   How the Menu is structured (Sections).
+    *   Which Languages are supported.
+    *   Default Layouts (Variants).
+<li>  <b>No Downstream Overrides</b>: Menu structure is defined <b>exclusively</b> per <code style="background:#e0e0e0; padding:2px;">(tenant_id, organization_id)</code>. Companies and Projects <b>CANNOT</b> define or override menu structure.</li>
+<br/>
+<h3>11.1.2. Code vs. Data Authority</h3>
+<li>  <b>ModuleRegistry (Code)</b>: The immutable source of truth for *available* software capabilities (Modules). It defines what *can* exist.</li>
+<li>  <b>Organization Apps (Data)</b>: The mutable record of what *is activated* for a specific Organization.</li>
+<li>  <b>Module Integrity Rule</b>: An App cannot be activated if it does not exist in the <code style="background:#e0e0e0; padding:2px;">ModuleRegistry</code>.</li>
+<br/>
+<h3>11.1.3. Relational Decomposition (Strict Contract)</h3>
+The system rejects JSON blob storage for structure. It enforces a Mandatory Relational Decomposition Pattern:
+<br/>
+<li>  <b>Object A (Section)</b>: <code style="background:#e0e0e0; padding:2px;">organization_sections</code></li>
+<li>  <b>Object B (App Activation)</b>: <code style="background:#e0e0e0; padding:2px;">organization_apps</code></li>
+<li>  <b>Relation A↔B (Link Item)</b>: <code style="background:#e0e0e0; padding:2px;">organization_section_items</code></li>
+<li>  <b>Translation A_t</b>: <code style="background:#e0e0e0; padding:2px;">organization_section_translations</code></li>
+<li>  <b>Translation B_t</b>: <code style="background:#e0e0e0; padding:2px;">organization_app_translations</code></li>
+<br/>
+<p><b>Invariants</b>:<br/><li>  Apps <b>MUST</b> exist in <b>Object B</b> before being placed in <b>Relation A↔B</b>.</li><br/><li>  Variants <b>MUST NOT</b> replace the A↔B link table.</li><br/><li>  Decomposition is <b>mandatory</b>; no structural shortcut allowed.</li></p>
+<br/>
+<p>---</p>
+<br/>
+<h2>11.2. Administrative Responsibility Model</h2>
+<br/>
+<h3>1. Super Admin (System Operator)</h3>
+<li>  <b>Capabilities</b>: Define <code style="background:#e0e0e0; padding:2px;">ModuleRegistry</code>, Block Modules System-wide (<code style="background:#e0e0e0; padding:2px;">organization_module_overrides</code>).</li>
+<li>  <b>Scope</b>: Cross-Tenant.</li>
+<br/>
+<h3>2. Organization Owner (Admin)</h3>
+<li>  <b>Capabilities</b>:</li>
+    *   <b>Structure</b>: Manage Sections (Create/Edit/Disable).
+    *   <b>Activation</b>: Activate/Deactivate Apps.
+    *   <b>Linkage</b>: Link Apps to Sections.
+    *   <b>Ordering</b>: Define Base Order of Sections and Apps.
+    *   <b>Global Variants</b>: Create/Edit Organization-wide Variants.
+    *   <b>Defaults</b>: Set Global Default Variant & Language.
+<li>  <b>Scope</b>: Strict Organization Boundary.</li>
+<br/>
+<h3>3. End User (Member)</h3>
+<li>  <b>Capabilities</b>:</li>
+    *   <b>Local Variants</b>: Create/Edit private User Variants.
+    *   <b>Preferences</b>: Set "User Default Variant".
+    *   <b>Selection</b>: Switch "Active Variant" for session.
+    *   <b>Visibility</b>: Sees only sections/apps permitted by their RBAC.
+<li>  <b>Scope</b>: Strict User/Organization Boundary.</li>
+<br/>
+<p>---</p>
+<br/>
+<h2>11.3. Invariants & Isolation Rules</h2>
+<br/>
+<h3>11.3.1. The Structural Gate Invariant</h3>
+<b>An App must pass ALL structural gates before being visible:</b>
+<code style="background:#e0e0e0; padding:2px;">System Block</code> → <code style="background:#e0e0e0; padding:2px;">Activation</code> → <code style="background:#e0e0e0; padding:2px;">Section Membership</code> → <code style="background:#e0e0e0; padding:2px;">RBAC</code> → <code style="background:#e0e0e0; padding:2px;">Variant Visibility</code>
+<br/>
+<p>Any failure results in the App being strictly invisible.</p>
+<br/>
+<h3>11.3.2. Variant Limitations (Strict Phase 1)</h3>
+<b>A Variant cannot introduce structural nodes.</b>
+<li>  <b>Base Structure</b> (Sections + Activation + A↔B) is the <b>only canonical structural layer</b>.</li>
+<li>  Variants are <b>sparse overlays</b> for <b>App Visibility</b> and <b>App Ordering within Sections</b>.</li>
+<li>  <b>Section Reordering</b>: NOT SUPPORTED in Variants. Sections always appear in their Base Structure order.</li>
+<li>  A Variant <b>MUST NOT</b>:</li>
+    *   Introduce new apps or sections.
+    *   Move apps between sections.
+    *   Bypass RBAC or System Blocks.
+<br/>
+<h3>11.3.3. Security & RPC-Only Resolution</h3>
+<li>  <b>RPC Authority</b>: Menu structure MUST be resolved exclusively via <code style="background:#e0e0e0; padding:2px;">resolve_menu_structure</code>.</li>
+<li>  <b>No Client Authority</b>: The Client <b>MUST NEVER</b> inject RBAC permissions (e.g., <code style="background:#e0e0e0; padding:2px;">p_allowed_modules</code> is FORBIDDEN). RBAC must be resolved server-side.</li>
+<li>  <b>No Direct Writes</b>: All mutations MUST occur via <code style="background:#e0e0e0; padding:2px;">SECURITY DEFINER</code> RPCs. Tables are <code style="background:#e0e0e0; padding:2px;">REVOKE ALL</code> from public.</li>
+<br/>
+<h3>11.3.4. Fail-Closed Principles</h3>
+<li>  <b>Zero Structure</b>: If resolution yields 0 sections, return <code style="background:#e0e0e0; padding:2px;">[]</code>. No implicit default.</li>
+<li>  <b>System Block</b>: Overrides everything.</li>
+<li>  <b>Translation</b>: If translation is missing, return <b>NULL</b> (UI handles fallback). Database MUST NOT emit "MISSING_TRANS" markers.</li>
+<br/>
+<p>---</p>
+<br/>
+<h2>11.4. Menu Resolution Algorithm (Authoritative)</h2>
+<br/>
+<p>The <code style="background:#e0e0e0; padding:2px;">resolve_menu_structure</code> RPC MUST implement this pipeline:</p>
+<br/>
+<p>1.  <b>System Block</b> (Super Admin)<br/>    *   Exclude <code style="background:#e0e0e0; padding:2px;">module_id</code> in <code style="background:#e0e0e0; padding:2px;">organization_module_overrides</code> (<code style="background:#e0e0e0; padding:2px;">is_blocked=true</code>).</p>
+<br/>
+<p>2.  <b>App Activation</b> (Organization)<br/>    *   Include only <code style="background:#e0e0e0; padding:2px;">organization_apps</code> with <code style="background:#e0e0e0; padding:2px;">is_active=true</code>.</p>
+<br/>
+<p>3.  <b>Base Structure Assembly</b><br/>    *   Join <code style="background:#e0e0e0; padding:2px;">organization_sections</code> ↔ <code style="background:#e0e0e0; padding:2px;">organization_section_items</code> ↔ <code style="background:#e0e0e0; padding:2px;">organization_apps</code>.<br/>    *   Filter <code style="background:#e0e0e0; padding:2px;">is_enabled=true</code>.</p>
+<br/>
+<p>4.  <b>RBAC Filtering</b> (Internal Security)<br/>    *   <b>Strict Rule</b>: Permissions are resolved <b>internally</b> by joining <code style="background:#e0e0e0; padding:2px;">auth.permissions</code> (or equivalent).<br/>    *   <b>Input</b>: <code style="background:#e0e0e0; padding:2px;">auth.uid()</code>.<br/>    *   <b>Logic</b>: Filter Apps based on server-side permission check.<br/>    *   *Note*: If internal RBAC tables are not ready, default to "All Active Apps Visible to Members" (Fail-Open for members, Fail-Closed for non-members). <b>NEVER</b> accept client input.</p>
+<br/>
+<p>5.  <b>Variant Selection</b> (Precedence)<br/>    1.  <b>Active Session</b> (Arg <code style="background:#e0e0e0; padding:2px;">p_active_variant_id</code>).<br/>    2.  <b>User Default</b> (<code style="background:#e0e0e0; padding:2px;">user_variant_preferences</code>).<br/>    3.  <b>Global Default</b> (<code style="background:#e0e0e0; padding:2px;">organization_menu_variants</code>).<br/>    4.  <b>Base Structure</b> (Null).</p>
+<br/>
+<p>6.  <b>Variant Application</b> (Overlay)<br/>    *   If Variant ID exists:<br/>        *   Join <code style="background:#e0e0e0; padding:2px;">organization_menu_variant_items</code>.<br/>        *   <b>Hide</b>: Exclude if <code style="background:#e0e0e0; padding:2px;">is_hidden=true</code>.<br/>        *   <b>App Reorder</b>: Use <code style="background:#e0e0e0; padding:2px;">variant_items.order_index</code> for Apps within Sections.<br/>    *   <b>Strictness</b>: Sections use Base Order. Apps without variant entry inherit Base Order.</p>
+<br/>
+<p>7.  <b>Pruning & Cleanup</b><br/>    *   Remove empty Sections.<br/>    *   Return JSONB.</p>
+<br/>
+<p>---</p>
+<br/>
+<h2>11.5. Structural Tables (Reference)</h2>
+<br/>
+<h3>Category 1: Base Structure</h3>
+<li>  <code style="background:#e0e0e0; padding:2px;">organization_sections</code>: (id, tenant_id, org_id, order_index, is_enabled)</li>
+<li>  <code style="background:#e0e0e0; padding:2px;">organization_section_items</code>: (id, tenant_id, org_id, section_id, app_id, order_index)</li>
+<br/>
+<h3>Category 2: Activation</h3>
+<li>  <code style="background:#e0e0e0; padding:2px;">organization_apps</code>: (id, tenant_id, org_id, module_id, is_active)</li>
+<br/>
+<h3>Category 3: Translations</h3>
+<li>  <code style="background:#e0e0e0; padding:2px;">organization_languages</code>, <code style="background:#e0e0e0; padding:2px;">organization_section_translations</code>, <code style="background:#e0e0e0; padding:2px;">organization_app_translations</code>.</li>
+<br/>
+<h3>Category 4: Variants</h3>
+<li>  <code style="background:#e0e0e0; padding:2px;">organization_menu_variants</code>: (id, tenant_id, org_id, is_global, is_default, owner_user_id)</li>
+<li>  <code style="background:#e0e0e0; padding:2px;">organization_menu_variant_items</code>: (id, tenant_id, org_id, variant_id, section_id, app_id, order_index, is_hidden)</li>
+    *   *Note*: <code style="background:#e0e0e0; padding:2px;">app_id</code> is NOT NULL (Section reorder not supported).
+<br/>
+<h3>Category 5: Preferences</h3>
+<li>  <code style="background:#e0e0e0; padding:2px;">user_variant_preferences</code>: (user_id, org_id, variant_id)</li>
+<br/>
+<h3>Category 6: Overrides</h3>
+<li>  <code style="background:#e0e0e0; padding:2px;">organization_module_overrides</code>: (org_id, module_id, is_blocked)</li>
+<br/>
+<p>---</p>
+<br/>
+<h2>11.6. Structural Integrity Guarantees</h2>
+<br/>
+<p>1.  <b>Composite Scope</b>: All FKs MUST include <code style="background:#e0e0e0; padding:2px;">(tenant_id, organization_id)</code>.<br/>2.  <b>One Global Default</b>: Unique Index on <code style="background:#e0e0e0; padding:2px;">organization_menu_variants</code> (org_id, is_global=true, is_default=true).<br/>3.  <b>One User Default</b>: Unique Index on <code style="background:#e0e0e0; padding:2px;">user_variant_preferences</code> (user_id, org_id).<br/>4.  <b>A/B Separation</b>: <code style="background:#e0e0e0; padding:2px;">link_app_to_section</code> RPC MUST fail if App is not in <code style="background:#e0e0e0; padding:2px;">organization_apps</code>.<br/>5.  <b>Strict Isolation</b>: No cross-org references allowed.<br/></p>
+        
+        <div style="page-break-before: always;"></div>
+        <h1>File: Modular_Monolith_Architecture.md</h1>
+        <hr/>
+        <h1>1. Architecture Overview</h1>
+<br/>
+<h2>1.1. System Structure</h2>
+The system follows a <b>Strict Modular Monolith</b> architecture optimized for multi-tenancy, security, and maintainability.
+<br/>
+<li><b>Core (<code style="background:#e0e0e0; padding:2px;">src/core</code>)</b>: Contains shared domain logic, authentication, context resolution, and application ports. It is the backbone of the system.</li>
+<li><b>Shared (<code style="background:#e0e0e0; padding:2px;">src/shared</code>)</b>: Cross-cutting presentation concerns (UI components, I18n). strictly decoupled from Core.</li>
+<li><b>Modules (<code style="background:#e0e0e0; padding:2px;">src/modules</code>)</b>: functional verticals (e.g., <code style="background:#e0e0e0; padding:2px;">example-dashboard</code>). Isolated by strict boundaries.</li>
+<li><b>Infrastructure (<code style="background:#e0e0e0; padding:2px;">src/infra</code>)</b>: implementations of Core ports (e.g., Supabase repositories).</li>
+<li><b>Application (<code style="background:#e0e0e0; padding:2px;">src/app</code>)</b>: Next.js App Router handling routing, layouts, and page composition.</li>
+<br/>
+<h2>1.2. Key Principles</h2>
+<br/>
+<h3>Strict Module Isolation</h3>
+<li>Modules must not import from other modules.</li>
+<li>Interaction occurs only via the <code style="background:#e0e0e0; padding:2px;">moduleRegistry</code> and Core definitions.</li>
+<li>The <code style="background:#e0e0e0; padding:2px;">ModuleDefinition</code> contract enforces structure.</li>
+<br/>
+<h3>Multi-Tenant Enforcement</h3>
+<li><b>Database Level</b>: All data is tenant-scoped via <code style="background:#e0e0e0; padding:2px;">tenant_id</code> columns and Row Level Security (RLS).</li>
+<li><b>Application Level</b>: All repositories force explicit <code style="background:#e0e0e0; padding:2px;">tenantId</code> filtering.</li>
+<li><b>Context Level</b>: <code style="background:#e0e0e0; padding:2px;">AuthContext</code> is resolved deterministically per request.</li>
+<br/>
+<h3>Security Model (See Chapter 10)</h3>
+<li><b>RPC-Only Writes</b>: All sensitive mutations (Hierarchy, RBAC, 2FA) MUST occur via <code style="background:#e0e0e0; padding:2px;">SECURITY DEFINER</code> RPCs. Direct table writes are forbidden.</li>
+<li><b>Strict 2FA</b>: Tenant-aware, DB-backed 2FA enforcement with session rotation.</li>
+<li><b>Fail-Closed</b>: Systems deny access by default unless explicitly granted.</li>
+<li><b>RLS as Safety Net</b>: Application logic filters data, but RLS ensures safety if logic fails.</li>
+<br/>
+<h3>Canonical Routing</h3>
+<li>Routes are tenant-scoped: <code style="background:#e0e0e0; padding:2px;">/admin/t/[tenantSlug]/...</code>.</li>
+<li>Root <code style="background:#e0e0e0; padding:2px;">/admin</code> routes strictly redirect or fail if tenant definition is ambiguous.</li>
+<br/>
+<h2>1.3. Architecture Diagram (ASCII)</h2>
+<br/>
+<pre>
+[Browser Request]
+      |
+      v
+[Next.js Middleware/Routing]
+      |
+      v
+[Layout: /admin/t/[slug]] -> [resolveAuthContext] -> [SupabaseTenantRepository]
+      |                             |
+      |   (Fail if Null)            v
+      |                       [DB: Public Schema]
+      |
+      v
+[Module Page] -> [canAccessModule] -> [RBAC Check]
+      |
+      v
+[Module Component] -> [Repositories] -> [Supabase Client (Auth)]
+                                                |
+                                                v
+                                      [DB: RLS Filtered Data]
+</pre>
+<br/>
+<h2>1.4. Sources of Truth</h2>
+<br/>
+<p>The system relies on specific, authoritative sources for its state:</p>
+<br/>
+<li>  <b>Module Availability</b>: Defined by <code style="background:#e0e0e0; padding:2px;">moduleRegistry</code> + <code style="background:#e0e0e0; padding:2px;">ModuleDefinition.system.isActive</code> (Hard Switch).</li>
+<li>  <b>Tenant Enablement</b>: Defined by <code style="background:#e0e0e0; padding:2px;">tenant_modules</code> table (Tenant-scoped activation).</li>
+<li>  <b>RBAC Enforcement</b>: <code style="background:#e0e0e0; padding:2px;">requiredPermissions</code> (Static Contract) vs <code style="background:#e0e0e0; padding:2px;">resolved user permissions</code> (Dynamic Context).</li>
+<li>  <b>Tenant Context</b>: Resolved strictly per request via <code style="background:#e0e0e0; padding:2px;">resolveAuthContext</code> (No global/static state).</li>
+<li>  <b>Canonical Routing</b>: The URL path <code style="background:#e0e0e0; padding:2px;">/admin/t/[tenantSlug]</code> is the only source of truth for the current tenant.</li>
+<br/>
+<h2>1.5. Tenant Resolution Summary</h2>
+<br/>
+<p>The system uses a strict, deterministic resolution process:</p>
+<br/>
+<p>1.  <b>Source</b>: <code style="background:#e0e0e0; padding:2px;">tenantSlug</code> is derived <b>ONLY</b> from the route parameter <code style="background:#e0e0e0; padding:2px;">/admin/t/:tenantSlug</code>.<br/>2.  <b>Validation</b>: If the slug is provided but invalid (not found/no access) -> <b>Fail-Closed</b> (Redirect to Login/404).<br/>3.  <b>Missing Slug</b>:<br/>    -   <b>1 Tenant</b>: Implicitly resolved (Auto-Redirect to Canonical).<br/>    -   <b>>1 Tenant</b>: Ambiguous -> <b>409 Conflict</b> (Redirect to Tenant Selection).<br/>    -   <b>0 Tenants</b>: No Access -> <b>Fail</b> (403/404).<br/>4.  <b>Constraints</b>:<br/>    -   No support for <code style="background:#e0e0e0; padding:2px;">?tenant=</code> query parameters in UI.<br/>    -   No "default tenant" or "last visited" fallbacks in the core logic (strictly explicit).</p>
+<br/>
+<h2>1.6. Verification Points (High-Level)</h2>
+<br/>
+<p>Production invariants that must be verified:</p>
+<br/>
+<p>1.  <b>No Server-Admin</b>: The <code style="background:#e0e0e0; padding:2px;">service_role</code> key is strictly forbidden in the request/response flow.<br/>2.  <b>Explicit Filtering</b>: All repository methods MUST require <code style="background:#e0e0e0; padding:2px;">tenantId</code> and filter by it explicitly.<br/>3.  <b>RLS Enforcement</b>: All tenant-scoped tables MUST have RLS enabled and forced.<br/>4.  <b>Fail-Closed Routing</b>: Routes must not render if context is invalid.<br/>5.  <b>Module Isolation</b>: No cross-module imports allowed; strict boundary enforcement.</p>
+<br/>
+<h2>1.7. Static vs Dynamic State</h2>
+<br/>
+<p>The system strictly distinguishes between compile-time definitions and runtime state:</p>
+<br/>
+<li>  <b>Static (Compile-Time)</b>:</li>
+    -   <code style="background:#e0e0e0; padding:2px;">moduleRegistry</code>: The immutable catalog of available code modules.
+    -   <code style="background:#e0e0e0; padding:2px;">ModuleDefinition</code>: Structural contract (routes, metadata).
+    -   <code style="background:#e0e0e0; padding:2px;">system.isActive</code>: Hard infrastructure switch (commits/deploys).
+<br/>
+<li>  <b>Dynamic (Runtime / Data)</b>:</li>
+    -   <code style="background:#e0e0e0; padding:2px;">tenant_modules</code>: Which tenants have subscribed to which modules.
+    -   <code style="background:#e0e0e0; padding:2px;">role_permissions</code>: How abstract roles map to granular permissions.
+    -   <code style="background:#e0e0e0; padding:2px;">resolved user permissions</code>: The effective permission set for a user in a specific tenant to a specific module.
+<br/>
+<li>  <b>Per-Request (Ephemeral)</b>:</li>
+    -   <code style="background:#e0e0e0; padding:2px;">resolveAuthContext</code>: The calculated identity for the current HTTP request.
+    -   <code style="background:#e0e0e0; padding:2px;">tenantSlug</code>: The context identifier derived from the URL for this specific execution.
+    -   <code style="background:#e0e0e0; padding:2px;">UserContext</code>: The temporary object holding the resolved permissions for the duration of the request.
+<h1>2. Tenancy Model</h1>
+<br/>
+<h2>2.1. Tenant Resolution Strategy</h2>
+<br/>
+<p>The system employs a strict, deterministic resolution, precedence-based strategy.</p>
+<br/>
+<p><b>Precedence Order:</b><br/>1.  <b>URL Path (Primary)</b>: <code style="background:#e0e0e0; padding:2px;">/admin/t/[tenantSlug]</code><br/>    -   This is the <b>Canonical</b> source of truth.<br/>    -   If present, other sources are ignored.<br/>    -   <b>Constraint</b>: If a slug is present, the system MUST validate that slug directly. It MUST NOT fallback to implicit resolution.<br/>2.  <b>Header (API/HTMX)</b>: <code style="background:#e0e0e0; padding:2px;">x-tenant-slug</code><br/>    -   Used for non-navigation requests (API, RPC, background interactions).<br/>    -   <b>Constraint</b>: It MUST NOT override a URL path tenantSlug.<br/>    -   <b>Constraint</b>: It MUST NOT be used for primary UI routing.<br/>    -   <b>Validation</b>: Even when derived from Header, the system <b>MUST validate membership</b> via <code style="background:#e0e0e0; padding:2px;">tenant_users</code>. Transport presence does not imply access.<br/>3.  <b>Cookie (Fallback)</b>: <code style="background:#e0e0e0; padding:2px;">tenant_slug</code><br/>    -   Used for redirecting from root to last visited.<br/>    -   <b>Validation</b>: Even when derived from Cookie, the system <b>MUST validate membership</b> via <code style="background:#e0e0e0; padding:2px;">tenant_users</code>.<br/>4.  <b>Implicit (Strict)</b>:<br/>    -   This step runs <b>ONLY if no tenantSlug is present</b> in the URL.<br/>    -   Query <code style="background:#e0e0e0; padding:2px;">tenant_users</code> for the authenticated user.<br/>    -   <b>Count = 1</b>: Auto-select. <b>System MUST redirect to canonical URL <code style="background:#e0e0e0; padding:2px;">/admin/t/[resolvedSlug]</code>.</b><br/>        -   <b>Constraint</b>: Canonical redirect MUST occur <b>before rendering any tenant-scoped layout</b>.<br/>        -   <b>Constraint</b>: No module component may render under a non-canonical URL.<br/>    -   <b>Count > 1</b>: Ambiguous (Return Null).<br/>    -   <b>Count = 0</b>: None (Return Null).</p>
+<br/>
+<p>In all cases, the system distinguishes between:<br/><li>  <b>Identity failure</b> (authentication)</li><br/><li>  <b>Authorization failure</b> (membership/permission)</li><br/><li>  <b>Context ambiguity</b> (multiple tenants)</li><br/>Each results in a different deterministic outcome.</p>
+<br/>
+<h2>2.2. Fail-Closed Behavior</h2>
+<br/>
+<p>The system distinguishes strictly between authentication and resolution failures.</p>
+<br/>
+<h3>A. Authentication Failure</h3>
+<li>  <b>Condition</b>: User is not authenticated (no session).</li>
+<li>  <b>Action</b>: Redirect to <code style="background:#e0e0e0; padding:2px;">/login</code>.</li>
+<br/>
+<h3>B. Tenant Resolution Failure (User Authenticated)</h3>
+Failed resolution NEVER redirects to <code style="background:#e0e0e0; padding:2px;">/login</code> if the user is authenticated.
+Tenant resolution consists of <b>TWO independent checks</b>:
+1.  <b>Step 1: Slug Existence</b> (Does a tenant with this slug exist?)
+2.  <b>Step 2: Membership Validation</b> (Does the user belong to that tenant?)
+<br/>
+<p>1.  <b>Case 1: No Membership (Step 2 Fail)</b><br/>    -   <b>Condition</b>: Slug exists (Step 1 pass), but User is not a member (Step 2 fail).<br/>    -   <b>Action</b>: Return <b>403 Forbidden</b> or <b>404 Not Found</b> (Security through obscurity preferred).<br/>    -   <b>Reason</b>: User exists, but has no access to this specific tenant.</p>
+<br/>
+<p>2.  <b>Case 2: Ambiguous Membership</b><br/>    -   <b>Condition</b>: User belongs to >1 tenant, no explicit slug provided, implicit resolution blocked.<br/>    -   <b>Action</b>: Redirect to <code style="background:#e0e0e0; padding:2px;">/admin/select-tenant</code> OR return <b>HTTP 409 Conflict</b>.<br/>    -   <b>Reason</b>: System cannot deterministically choose a context.</p>
+<br/>
+<p>3.  <b>Case 3: Invalid Slug (Step 1 Fail)</b><br/>    -   <b>Condition</b>: The requested tenant slug does not exist in the database.<br/>    -   <b>Action</b>: Return <b>404 Not Found</b>.</p>
+<br/>
+<h2>2.3. Anti-Patterns & Prohibitions</h2>
+<br/>
+<li>  <b>Query Parameters</b>: <code style="background:#e0e0e0; padding:2px;">?tenant=</code> is strictly forbidden for routing to avoid caching/SEO issues.</li>
+<li>  <b>Cross-Tenant Leaks</b>:</li>
+    -   Repositories MUST enforce <code style="background:#e0e0e0; padding:2px;">.eq('tenant_id', tenantId)</code> before selecting.
+    -   <code style="background:#e0e0e0; padding:2px;">resolveAuthContext</code> verifies that the <code style="background:#e0e0e0; padding:2px;">user</code> is actually a member of the requested <code style="background:#e0e0e0; padding:2px;">tenantSlug</code> (via <code style="background:#e0e0e0; padding:2px;">tenant_users</code> check).
+<br/>
+<p><b>Security Invariant</b>:<br/>At no point may tenant context be inferred from client-controlled state alone. Every tenant resolution must be verified against database membership.<br/><h1>3. RBAC Model (Strict Permission-Based)</h1></p>
+<br/>
+<h2>3.1. Core Concepts</h2>
+<br/>
+<p>The system uses a <b>Permission-Based Access Control</b> model, not Role-Based (in the application code). Roles exist only in the database to group permissions.</p>
+<br/>
+<li>  <b>Permission</b>: Atomic unit of access (e.g., <code style="background:#e0e0e0; padding:2px;">settings.write</code>, <code style="background:#e0e0e0; padding:2px;">users.view</code>).</li>
+<li>  <b>Role</b>: A named collection of permissions (e.g., <code style="background:#e0e0e0; padding:2px;">Owner</code>, <code style="background:#e0e0e0; padding:2px;">Editor</code>).</li>
+<li>  <b>User</b>: Assigned a Role *within* a Tenant.</li>
+<br/>
+<h2>3.2. Data Flow</h2>
+<br/>
+<p>1.  <b>Database</b>:<br/>    -   <code style="background:#e0e0e0; padding:2px;">permissions</code>: All available permission strings.<br/>    -   <code style="background:#e0e0e0; padding:2px;">role_permissions</code>: Mapping of Role -> Permissions.<br/>    -   <code style="background:#e0e0e0; padding:2px;">tenant_users</code>: Assignment of User -> Role (Tenant Scoped).</p>
+<br/>
+<p>2.  <b>Resolution (<code style="background:#e0e0e0; padding:2px;">getUserContext</code>)</b>:<br/>    -   Fetches user's role for the active tenant.<br/>    -   Joins <code style="background:#e0e0e0; padding:2px;">role_permissions</code> and <code style="background:#e0e0e0; padding:2px;">permissions</code>.<br/>    -   Returns a flat array of permission strings (string[]).<br/>    -   <b>Constraint</b>: If resolution fails (no role, invalid join), it returns <code style="background:#e0e0e0; padding:2px;">[]</code> (Empty Set).</p>
+<br/>
+<p>3.  <b>Enforcement (<code style="background:#e0e0e0; padding:2px;">canAccessModule</code>)</b>:<br/>    -   Input: <code style="background:#e0e0e0; padding:2px;">ModuleDefinition</code> (defines <code style="background:#e0e0e0; padding:2px;">requiredPermissions</code>).<br/>    -   Logic: Checks if the User's context (resolved permissions) contains the required permissions.<br/>    -   <b>Invariant</b>: <code style="background:#e0e0e0; padding:2px;">canAccessModule</code> MUST be evaluated only after successful tenant resolution, membership validation, and module activation checks (system.isActive AND tenant_modules). A module that is inactive MUST NOT be evaluated for permissions. RBAC evaluation MUST NOT occur without a valid tenant-scoped AuthContext.</p>
+<br/>
+<h2>3.3. Permission Semantics</h2>
+<br/>
+<h3>1. Logic (AND)</h3>
+<code style="background:#e0e0e0; padding:2px;">requiredPermissions</code> uses strict <b>AND</b> logic.
+<li>  Access is granted ONLY if the user holds <b>ALL</b> listed permissions.</li>
+<li>  *Exception*: If user holds <code style="background:#e0e0e0; padding:2px;">*</code> (Wildcard), all requirements are satisfied.</li>
+<li>  <b>Evaluation Order</b>: If userPermissions contains <code style="background:#e0e0e0; padding:2px;">*</code>, access MUST be granted before evaluating requiredPermissions. Wildcard short-circuits AND evaluation.</li>
+<br/>
+<h3>2. Empty Requirements</h3>
+If <code style="background:#e0e0e0; padding:2px;">requiredPermissions</code> is <b>Empty</b> (<code style="background:#e0e0e0; padding:2px;">[]</code>):
+<li>  <b>Meaning</b>: <b>Public within Tenant</b>.</li>
+<li>  <b>Effect</b>: Any authenticated user who is a valid member of the current tenant can access this module.</li>
+<li>  <b>Constraint</b>: "Public within Tenant" does <b>NOT</b> bypass tenant membership validation. User must still be a valid member of the active tenant.</li>
+<li>  It does <b>NOT</b> imply "Deny All".</li>
+<br/>
+<h3>3. Wildcard Behavior (<code style="background:#e0e0e0; padding:2px;">*</code>)</h3>
+<li>  <b>Scope</b>: Tenant-Scoped ONLY.</li>
+<li>  <b>Definition</b>: The <code style="background:#e0e0e0; padding:2px;">*</code> string is a permission stored in the DB.</li>
+<li>  <b>Handling</b>:</li>
+    -   <b>Repository</b>: Returns <code style="background:#e0e0e0; padding:2px;">['*']</code> (raw). It does NOT expand it.
+    -   <b>Enforcement Layer</b>: <code style="background:#e0e0e0; padding:2px;">canAccessModule</code> checks:
+        <pre>typescript
+        if (userPermissions.includes('*')) return true;
+        </pre>
+<li>  <b>Constraint</b>: There is NO global superadmin. The <code style="background:#e0e0e0; padding:2px;">*</code> logic applies only within the isolated tenant context.</li>
+<li>  <b>Invariant</b>: Wildcard does not alter the meaning of empty requiredPermissions; empty requirements still require valid tenant membership (Wildcard user must still be a member).</li>
+<br/>
+<h2>3.4. Fail-Closed Guarantees</h2>
+<br/>
+<p>The system enforces specific behaviors for partial failures:</p>
+<br/>
+<p>1.  <b>Role Resolution Failure</b>:<br/>    -   If a user is in <code style="background:#e0e0e0; padding:2px;">tenant_users</code> but has no role assigned, or the role has no permissions -> <code style="background:#e0e0e0; padding:2px;">resolvedPermissions</code> = <code style="background:#e0e0e0; padding:2px;">[]</code>.<br/>2.  <b>Resolution Error</b>:<br/>    -   If the DB query fails -> <code style="background:#e0e0e0; padding:2px;">resolvedPermissions</code> = <code style="background:#e0e0e0; padding:2px;">[]</code>.<br/>    -   <b>Invariant</b>: If permission resolution fails for any reason, access MUST be denied (treated as having no permissions).<br/>    -   <b>Invariant</b>: Under no circumstance may permission resolution failure default to '*' or implicit allow.</p>
+<br/>
+<h2>3.5. Code Contract</h2>
+<br/>
+<li>  <b>Forbidden</b>: <code style="background:#e0e0e0; padding:2px;">requiredRoles</code> array in Module Definition.</li>
+<li>  <b>Mandatory</b>: <code style="background:#e0e0e0; padding:2px;">requiredPermissions</code> array.</li>
+<h1>4. Routing Model</h1>
+<br/>
+<h2>4.1. Canonical Route Structure</h2>
+<br/>
+<p>The system enforces a strict hierarchical routing model to guarantee context.</p>
+<br/>
+<p><b>Pattern</b>: <code style="background:#e0e0e0; padding:2px;">/admin/t/[tenantSlug]/[[...slug]]</code></p>
+<br/>
+<li>  <code style="background:#e0e0e0; padding:2px;">/admin</code>: Base admin path.</li>
+<li>  <code style="background:#e0e0e0; padding:2px;">/t/</code>: Tenant namespace.</li>
+<li>  <code style="background:#e0e0e0; padding:2px;">[tenantSlug]</code>: The explicit Context Identifier.</li>
+<li>  <code style="background:#e0e0e0; padding:2px;">[[...slug]]</code>: Module-specific route (Tenant-Agnostic).</li>
+<br/>
+<h2>4.2. Separation of Concerns</h2>
+<br/>
+<li>  <b>Tenant Slug</b>: Used *exclusively* to resolve <code style="background:#e0e0e0; padding:2px;">AuthContext</code> (Tenant + User Permissions).</li>
+<li>  <b>Module Slug</b>: Used *exclusively* to resolve the <code style="background:#e0e0e0; padding:2px;">Module</code> from the <code style="background:#e0e0e0; padding:2px;">registry</code>.</li>
+<li>  <b>Independence</b>: <code style="background:#e0e0e0; padding:2px;">resolveRoute</code> does not know or care about the tenant. It maps <code style="background:#e0e0e0; padding:2px;">['settings', 'users']</code> to the Settings Module component.</li>
+<br/>
+<h2>4.3. Fail-Closed Root</h2>
+<br/>
+<p>The root path <code style="background:#e0e0e0; padding:2px;">/admin/[[...slug]]</code> (without <code style="background:#e0e0e0; padding:2px;">/t/</code>) serves only as a <b>Dispatcher</b>.</p>
+<br/>
+<li>  Behaviors:</li>
+    1.  <b>Implicit Resolution</b>: Tries to find a single valid tenant for the user.
+    2.  <b>Redirect</b>: If found -> Redirects to Canonical <code style="background:#e0e0e0; padding:2px;">/admin/t/[slug]</code>.
+    3.  <b>Fail</b>: If ambiguous or none -> Redirects to Login or 404.
+<li>  <b>No UI</b>: This route does not render the admin UI directly. It enforces strict canonicalization.</li>
+<br/>
+<h2>4.4. Database Independence</h2>
+<br/>
+<p>Routing logic (mapping URL -> Component) is static (defined in Registry code). It does NOT depend on a database call. This ensures the routing structure is deterministic and high-performance. Database checks happen only for *Access Control* (Can this user see this route?), not for *Resolution* (Does this route exist?).</p>
+<br/>
+<h2>4.5. Activation & Authorization Order</h2>
+<br/>
+<p><b>Evaluation Order per Request:</b></p>
+<br/>
+<p>0.  <b><code style="background:#e0e0e0; padding:2px;">resolveAuthContext</code> (Tenant + UserContext)</b> MUST succeed.<br/>    -   Canonical tenant redirect (if implicit resolution = 1 tenant) MUST occur BEFORE <code style="background:#e0e0e0; padding:2px;">resolveRoute</code>.<br/>    -   No module resolution may occur without a valid tenant-scoped <code style="background:#e0e0e0; padding:2px;">AuthContext</code>.<br/>1.  <b><code style="background:#e0e0e0; padding:2px;">resolveRoute</code></b> (static module resolution via <code style="background:#e0e0e0; padding:2px;">moduleRegistry</code>).<br/>2.  <b>Module Activation Check</b> (<code style="background:#e0e0e0; padding:2px;">system.isActive</code> + <code style="background:#e0e0e0; padding:2px;">tenant_modules</code>).<br/>3.  <b>RBAC Check</b> (<code style="background:#e0e0e0; padding:2px;">canAccessModule</code>).<br/>4.  <b>Rendering</b>.</p>
+<br/>
+<p><b>Security Invariant:</b><br/><li>  Routing MUST NOT leak activation state or permission state.</li><br/><li>  Inactive modules and unauthorized modules MUST both return <b>404</b>.</li><br/><li>  No "Feature Disabled" UI may render for unauthorized tenants.</li><br/><li>  <b>Activation and RBAC checks MUST never execute with undefined <code style="background:#e0e0e0; padding:2px;">tenantId</code> or undefined <code style="background:#e0e0e0; padding:2px;">UserContext</code>.</b></li><br/><h1>5. Data Layer</h1></p>
+<br/>
+<h2>5.1. Layering Strategy</h2>
+<br/>
+<p>The data layer follows a strict Port/Adapter pattern to decouple Core business logic from Infrastructure specifics.</p>
+<br/>
+<li>  <b>Ports (<code style="background:#e0e0e0; padding:2px;">src/core/application/ports</code>)</b>: TypeScript Interfaces defining *what* is needed (e.g., <code style="background:#e0e0e0; padding:2px;">ITenantRepository</code>).</li>
+<li>  <b>Adapters (<code style="background:#e0e0e0; padding:2px;">src/infra/repositories</code>)</b>: Implementations using specific technologies (e.g., <code style="background:#e0e0e0; padding:2px;">SupabaseTenantRepository</code> using <code style="background:#e0e0e0; padding:2px;">supabase-js</code>).</li>
+<br/>
+<h2>5.2. Strict Enforcement Rules</h2>
+<br/>
+<h3>1. Tenant-Scoped Table Definition</h3>
+A <b>tenant-scoped table</b> is any table containing a <code style="background:#e0e0e0; padding:2px;">tenant_id</code> column.
+All queries against such tables MUST include explicit <code style="background:#e0e0e0; padding:2px;">tenant_id</code> filtering.
+<br/>
+<h3>2. Explicit Tenant Filtering</h3>
+<b>Invariant</b>: No query touching a tenant-scoped table may execute without an explicit <code style="background:#e0e0e0; padding:2px;">tenant_id</code> equality constraint bound to it.
+Implicit reliance on RLS is forbidden.
+<br/>
+<li>  The <code style="background:#e0e0e0; padding:2px;">tenant_id</code> constraint MUST be applied at the SQL level.</li>
+<li>  Tenant filtering MUST NOT occur in application memory after query execution.</li>
+<br/>
+<pre>typescript
+// Correct
+supabase.from('table').select().eq('tenant_id', tenantId);
+<br/>
+<p>// Prohibited<br/>supabase.from('table').select(); // Implicit reliance on RLS is forbidden<br/>// Prohibited<br/>data.filter(d => d.tenant_id === tenantId); // In-memory filtering prohibited<br/></pre></p>
+<br/>
+<h3>3. Repository Boundary Rule</h3>
+<li>  Repositories MUST receive <code style="background:#e0e0e0; padding:2px;">tenantId</code> as an explicit argument.</li>
+<li>  Repositories MUST NOT infer <code style="background:#e0e0e0; padding:2px;">tenantId</code> from global context or <code style="background:#e0e0e0; padding:2px;">resolveAuthContext</code> internally.</li>
+<li>  Tenant context must be injected from the application layer.</li>
+<br/>
+<h3>4. Mandatory Tenant ID Validation</h3>
+Repositories methods must Throw Error if <code style="background:#e0e0e0; padding:2px;">tenantId</code> argument is undefined or null.
+<br/>
+<h3>5. Prevent Unscoped Repository Methods</h3>
+<li>  Repositories MUST NOT expose methods that operate on tenant-scoped tables without requiring <code style="background:#e0e0e0; padding:2px;">tenantId</code>.</li>
+<li>  Unscoped variants (e.g., <code style="background:#e0e0e0; padding:2px;">getAllUsers()</code>) are strictly forbidden.</li>
+<br/>
+<h3>6. Service Role Prohibition</h3>
+The application code MUST use <code style="background:#e0e0e0; padding:2px;">createAuthClient()</code> (User-Scoped).
+<b>Prohibited</b>: <code style="background:#e0e0e0; padding:2px;">createAdminClient()</code> / <code style="background:#e0e0e0; padding:2px;">service_role</code> key usage in the request flow.
+<br/>
+<h3>7. RLS as Safety Net</h3>
+While the application logic (explicit filtering) is the primary defense, <b>Row Level Security (RLS)</b> is strictly enabled on the database to act as a fail-safe backstop. If the repo fails to filter, the DB prevents cross-tenant leakage.
+<br/>
+<h2>5.3. RPC Boundaries</h2>
+Complex mutations (like Edit Locks) are encapsulated in PostgreSQL Functions (RPCs) to ensure atomicity and strict permission checking that might be hard to guarantee with multiple client-side calls.
+<h1>6. RLS Security Model</h1>
+<br/>
+<h2>6.1. Policy Architecture</h2>
+<br/>
+<p>The system enforces <b>Row Level Security (RLS)</b> on all sensitive tables.</p>
+<br/>
+<li>  <b>Mode</b>: <code style="background:#e0e0e0; padding:2px;">FORCE ROW LEVEL SECURITY</code> (Strict). Table owners cannot bypass RLS.</li>
+<li>  <b>Predicate</b>: Membership Check via <code style="background:#e0e0e0; padding:2px;">tenant_users</code>.</li>
+<br/>
+<p><b>Standard Policy Pattern (Select):</b><br/><pre>sql<br/>USING (<br/>  exists (<br/>    select 1 from public.tenant_users<br/>    where tenant_id = current_table.tenant_id<br/>    and user_id = auth.uid()<br/>  )<br/>)<br/></pre></p>
+<br/>
+<h2>6.2. Write Protection (<code style="background:#e0e0e0; padding:2px;">edit_locks</code>)</h2>
+<br/>
+<p>For the critical <code style="background:#e0e0e0; padding:2px;">edit_locks</code> table, security is managed via <b>RPC-Only Mutations</b>.</p>
+<br/>
+<p>1.  <b>Table Permissions</b>:<br/>    -   <code style="background:#e0e0e0; padding:2px;">authenticated</code>: <code style="background:#e0e0e0; padding:2px;">GRANT SELECT</code> ONLY.<br/>    -   <code style="background:#e0e0e0; padding:2px;">REVOKE</code> INSERT/UPDATE/DELETE.<br/>2.  <b>Implication</b>: Even if RLS allows a write, the standard SQL privileges block it. This forces writes to go through approved RPCs.</p>
+<br/>
+<h2>6.3. Trusted RPCs (Security Definer)</h2>
+<br/>
+<p>Specific operations (<code style="background:#e0e0e0; padding:2px;">acquire_edit_lock</code>, <code style="background:#e0e0e0; padding:2px;">release_edit_lock</code>) run with <code style="background:#e0e0e0; padding:2px;">SECURITY DEFINER</code> privileges to perform operations that users shouldn't do directly (or to ensure atomic logic).</p>
+<br/>
+<p><b>Safety Measures:</b><br/>1.  <b>Search Path</b>: Explicitly set to <code style="background:#e0e0e0; padding:2px;">public, auth</code> to prevent search path hijacking.<br/>2.  <b>Explicit Membership Check</b>: The function manually re-verifies <code style="background:#e0e0e0; padding:2px;">tenant_users</code> membership at the very start of execution.<br/>    <pre>sql<br/>    if not exists (select 1 from public.tenant_users ...) then raise exception ...<br/>    </pre><br/>3.  <b>Explicit Revoke</b>: <code style="background:#e0e0e0; padding:2px;">REVOKE ALL</code> from <code style="background:#e0e0e0; padding:2px;">public, anon</code> ensures only authenticated users can trigger the function.</p>
+<br/>
+<h2>6.4. Trust Boundaries</h2>
+<br/>
+<p>1.  <b>Application</b>: Untrusted. Can request anything.<br/>2.  <b>Repository</b>: Trusted to format request, but strictly scoped to User Auth.<br/>3.  <b>Database (RLS)</b>: Trusted Final Enforcer. returns empty sets if App requests wrong tenant.<br/>4.  <b>RPC</b>: Trusted Atomic Unit. Verified by SQL logic.<br/><h1>7. Edit Locks Model (Phase 3 Strict)</h1></p>
+<br/>
+<h2>7.1. Concept</h2>
+Provides mutually exclusive, short-lived locks on entities to prevent concurrent edit conflicts in a multi-user environment.
+<br/>
+<h2>7.2. Schema (<code style="background:#e0e0e0; padding:2px;">edit_locks</code>)</h2>
+<li>  <b>Key</b>: <code style="background:#e0e0e0; padding:2px;">(tenant_id, entity_type, entity_id)</code></li>
+<li>  <b>Owner</b>: <code style="background:#e0e0e0; padding:2px;">locked_by</code> (User UUID)</li>
+<li>  <b>Time</b>: <code style="background:#e0e0e0; padding:2px;">locked_at</code> (Acquisition/Refresh), <code style="background:#e0e0e0; padding:2px;">expires_at</code> (Absolute Validity)</li>
+<br/>
+<h3>System Invariant</h3>
+<b>Invariant</b>: At most one active lock per <code style="background:#e0e0e0; padding:2px;">(tenant_id, entity_type, entity_id)</code>.
+This uniqueness is structurally enforced by:
+1.  <b>Composite Primary Key</b>: The database schema physically prevents duplicate rows for the same entity.
+2.  <b>Row-Level Locking</b>: PostgreSQL serialization ensures concurrent attempts queue for the same row.
+3.  <b>Atomic Upsert</b>: <code style="background:#e0e0e0; padding:2px;">INSERT ... ON CONFLICT</code> provides atomic "check-and-set" semantics.
+<br/>
+<h2>7.3. Lock Acquisition Logic (RPC)</h2>
+<br/>
+<p>The <code style="background:#e0e0e0; padding:2px;">acquire_edit_lock</code> RPC implements an atomic "Check-and-Set" or "Steal-if-Expired" logic.</p>
+<br/>
+<p><b>State Transition Table:</b></p>
+<br/>
+<p>| Existing State | User Checks | Override? | Result |<br/>| :--- | :--- | :--- | :--- |<br/>| <b>None</b> | - | - | <b>Acquired</b> (Insert) |<br/>| <b>Locked (Expired)</b> | - | - | <b>Acquired</b> (Takeover) |<br/>| <b>Locked (Active)</b> | Same User | - | <b>Refreshed</b> (Extend TTL) |<br/>| <b>Locked (Active)</b> | Diff User | False | <b>Denied</b> (Fail) |<br/>| <b>Locked (Active)</b> | Diff User | True | <b>Acquired</b> (Steal) |</p>
+<br/>
+<h3>RBAC Boundary Clarification</h3>
+<li>  <b>RPC Responsibility</b>: The RPC strictly validates <b>Tenant Membership</b> (<code style="background:#e0e0e0; padding:2px;">tenant_id</code> exists in <code style="background:#e0e0e0; padding:2px;">tenant_users</code>).</li>
+<li>  <b>App Responsibility</b>: The Application Layer MUST verify <b>RBAC Permissions</b> (e.g., <code style="background:#e0e0e0; padding:2px;">locks.override</code> or super-admin powers).</li>
+<li>  <b>Security Boundary</b>: The RPC does <b>NOT</b> evaluate <code style="background:#e0e0e0; padding:2px;">locks.override</code> permissions. It trusts the <code style="background:#e0e0e0; padding:2px;">override</code> boolean passed by the App (which is why the App must authorize it first).</li>
+<br/>
+<h2>7.4. Operational Guarantees</h2>
+<br/>
+<h3>Deadlock Safety</h3>
+Deadlocks are structurally impossible for this feature because:
+1.  <b>Single Row Context</b>: Operations affect exactly one row in one table (<code style="background:#e0e0e0; padding:2px;">edit_locks</code>) via Primary Key.
+2.  <b>No Multi-Table Writes</b>: The RPC does not write to other tables.
+3.  <b>No Lock Chains</b>: There are no dependencies on other locks.
+<br/>
+<h3>Expiration Model</h3>
+<li>  <b>Lazy Expiration</b>: Expired locks are <b>NOT</b> proactively cleaned by a background worker.</li>
+<li>  <b>Overwrite Logic</b>: They are lazily overwritten by the next <code style="background:#e0e0e0; padding:2px;">acquire</code> attempt.</li>
+<li>  <b>Correctness</b>: No background job is required for system correctness.</li>
+<br/>
+<h3>Clock Source</h3>
+<li>  <b>Single Source of Truth</b>: Lock validity is based <b>exclusively</b> on the Database Server time (<code style="background:#e0e0e0; padding:2px;">now()</code>).</li>
+<li>  <b>Skew Safety</b>: Application server clock skew does not affect lock correctness or expiration logic.</li>
+<br/>
+<h2>7.5. Release Logic</h2>
+<br/>
+<p><code style="background:#e0e0e0; padding:2px;">release_edit_lock</code> is safe/idempotent:<br/><li>  Deletes current lock <b>IF AND ONLY IF</b> <code style="background:#e0e0e0; padding:2px;">locked_by</code> matches <code style="background:#e0e0e0; padding:2px;">auth.uid()</code>.</li><br/><li>  Prevents users from unlocking each other's work (unless using an override path in <code style="background:#e0e0e0; padding:2px;">acquire</code>, but explicit release is strict).</li><br/><h1>8. Failure Modes & Handling</h1></p>
+<br/>
+<h2>8.1. Authorized Resolution Failures</h2>
+<br/>
+<p>| Scenario | Detection | System Behavior |<br/>| :--- | :--- | :--- |<br/>| <b>Unauthenticated</b> | No session found | <b>Redirect</b> to <code style="background:#e0e0e0; padding:2px;">/login</code>. |<br/>| <b>Invalid Slug (Step 1 Fail)</b> | Slug not found in <code style="background:#e0e0e0; padding:2px;">tenants</code> table | <b>Return 404 Not Found</b>. (Never redirect authenticated users). |<br/>| <b>No Membership (Step 2 Fail)</b> | Tenant exists, but user not in <code style="background:#e0e0e0; padding:2px;">tenant_users</code> | <b>Return 404 Not Found</b> or <b>403 Forbidden</b>. |<br/>| <b>Ambiguous Implicit</b> | No slug provided, <code style="background:#e0e0e0; padding:2px;">tenant_users</code> count > 1 | <b>Redirect</b> to <code style="background:#e0e0e0; padding:2px;">/admin/select-tenant</code> OR <b>409 Conflict</b>. |<br/>| <b>No Tenants (Implicit)</b> | No slug provided, <code style="background:#e0e0e0; padding:2px;">tenant_users</code> count = 0 | <b>Return 403 Forbidden</b> or <b>404 Not Found</b> (Fail-Closed). |</p>
+<br/>
+<h2>8.2. Authorization, Activation & Routing Failures</h2>
+<br/>
+<p>| Scenario | Detection | System Behavior |<br/>| :--- | :--- | :--- |<br/>| <b>Route Not Found</b> | <code style="background:#e0e0e0; padding:2px;">resolveRoute</code> returns null | <b>Return 404 Not Found</b>. |<br/>| <b>Inactive Module</b> | <code style="background:#e0e0e0; padding:2px;">system.isActive</code> check fails | <b>Return 404 Not Found</b>. (Prevent state leakage). |<br/>| <b>Tenant Disabled</b> | <code style="background:#e0e0e0; padding:2px;">tenant_modules</code> check fails | <b>Return 404 Not Found</b>. (Security through obscurity). |<br/>| <b>RBAC Denied</b> | <code style="background:#e0e0e0; padding:2px;">canAccessModule</code> returns false | <b>Return 404 Not Found</b>. (Security through obscurity). |<br/>| <b>Invariant Failure</b> | Undefined <code style="background:#e0e0e0; padding:2px;">tenantId</code> / <code style="background:#e0e0e0; padding:2px;">UserContext</code> | <b>Throw 500 Error</b>. (Strict Safety boundary). |</p>
+<br/>
+<h2>8.3. Data Access Failures</h2>
+<br/>
+<p>| Scenario | Detection | System Behavior |<br/>| :--- | :--- | :--- |<br/>| <b>RLS Violation</b> | Query returns empty set (After Explicit Filter) | Application treats as "Not Found" (<code style="background:#e0e0e0; padding:2px;">null</code>). |<br/>| <b>Missing TenantID</b> | Repository Check | <b>Throw Error</b>. (Prevents Query Execution). |<br/>| <b>Unscoped Method</b> | Method Call Without TenantID | <b>Throw Error</b>. (Strict Prohibition). |<br/>| <b>DB Unreachable</b> | Supabase Client Error | <b>Throw Error</b> / 500 Page. |</p>
+<br/>
+<p>> <b>Invariant</b>: Empty result set MUST only be treated as "Not Found" after explicit tenant filtering is applied. An empty result from an unscoped query is a critical security failure, not a 404.</p>
+<br/>
+<h2>8.4. Edit Lock Failures</h2>
+<br/>
+<p>| Scenario | Detection | System Behavior |<br/>| :--- | :--- | :--- |<br/>| <b>Lock Held (Business Logic)</b> | RPC returns <code style="background:#e0e0e0; padding:2px;">success: false</code> | UI enters <b>Read-Only Mode</b>. (Expected State). |<br/>| <b>RPC Error</b> | Repository catch | <b>Throw Error</b>. UI prevents editing (Safety). |<br/>| <b>Invalid TTL</b> | RPC Exception | <b>Throw Error</b>. Request Rejected. |<br/>| <b>Concurrent Race</b> | DB Row Lock | Requests queue; winner resolved deterministically by DB. |</p>
+<br/>
+<h2>8.6. 2FA & Session Failures</h2>
+<br/>
+<p>| Scenario | Detection | System Behavior | Evidence Location |<br/>| :--- | :--- | :--- | :--- |<br/>| <b>Cookie Missing</b> | Middleware / Guard | <b>Redirect</b> to <code style="background:#e0e0e0; padding:2px;">/admin/t/[slug]/2fa?reason=missing_cookie</code>. | <code style="background:#e0e0e0; padding:2px;">src/core/security/serverGuard.ts:23</code> |<br/>| <b>Invalid Signature</b> | <code style="background:#e0e0e0; padding:2px;">verifyTwoFaCookie</code> fails | <b>Redirect</b> to <code style="background:#e0e0e0; padding:2px;">/admin/t/[slug]/2fa?reason=invalid_signature</code>. | <code style="background:#e0e0e0; padding:2px;">src/core/security/serverGuard.ts:30</code> |<br/>| <b>Tenant Mismatch</b> | Payload <code style="background:#e0e0e0; padding:2px;">tenantId</code> != Request | <b>Redirect</b> to <code style="background:#e0e0e0; padding:2px;">/admin/t/[slug]/2fa?reason=tenant_mismatch</code>. | <code style="background:#e0e0e0; padding:2px;">src/core/security/serverGuard.ts:36</code> |<br/>| <b>Session Revoked</b> | DB Check (<code style="background:#e0e0e0; padding:2px;">validate_twofa_session</code>) | <b>Redirect</b> to <code style="background:#e0e0e0; padding:2px;">/admin/t/[slug]/2fa?reason=session_revoked</code>. | <code style="background:#e0e0e0; padding:2px;">src/core/security/serverGuard.ts:47</code> |<br/>| <b>Token Expired</b> | JWT/Cookie TTL | <b>Redirect</b> to Login. | Standard Auth Flow. |</p>
+<br/>
+<p>> <b>Note</b>: "Lock Held" is a controlled business outcome, not a system failure condition.</p>
+<br/>
+<h2>8.5. General Philosophy</h2>
+<br/>
+<p>The system adheres to <b>Fail-Closed</b>.<br/><li>  If it's not explicitly allowed, it represents an error/attack.</li><br/><li>  It is better to show an error screen than to leak data or allow corrupt writes.</li><br/><li>  Ambiguity is treated as a security risk.</li><br/><h1>9. Verification Model</h1></p>
+<br/>
+<p>Strict automated commands verify the architectural invariants. These commands must pass before any release.</p>
+<br/>
+<h2>9.1. Security Boundary Verification</h2>
+<br/>
+<p><b>Command</b>: Server-Admin Leak Check<br/><pre>bash<br/>! grep -r "server-admin" src/app src/core src/infra | grep -v "seed" | grep -v "migration"<br/></pre><br/><li>  <b>Guarantee</b>: The powerful <code style="background:#e0e0e0; padding:2px;">service_role</code> key is NOT used in the application runtime flow. It is restricted to seeding/migrations.</li></p>
+<br/>
+<p><b>Command</b>: Admin Client Prohibition Check<br/><pre>bash<br/>! grep -r "createAdminClient" src/app src/modules src/core<br/></pre><br/><li>  <b>Guarantee</b>: Strictly prohibits <code style="background:#e0e0e0; padding:2px;">createAdminClient</code> usage in runtime code.</li></p>
+<br/>
+<p><b>Command</b>: Direct Write Check (<code style="background:#e0e0e0; padding:2px;">edit_locks</code>)<br/><pre>bash<br/>! grep -R "from(['\"]edit_locks['\"])" -n src | grep -E "insert|update|delete"<br/></pre><br/><li>  <b>Guarantee</b>: No application code bypasses the RPCs to modify locks directly.</li></p>
+<br/>
+<p><b>Command</b>: In-Memory Filtering Prevention<br/><pre>bash<br/>! grep -r "\.filter(.*tenant_id" src<br/></pre><br/><li>  <b>Guarantee</b>: Ensures no <code style="background:#e0e0e0; padding:2px;">tenant_id</code> filtering happens in application memory (after query execution). Relies on repository-level SQL constraints.</li></p>
+<br/>
+<p><b>Command</b>: Critical TODO Check<br/><pre>bash<br/>! grep -rE "TODO|FIXME" src/core/security src/db/migrations<br/></pre><br/><li>  <b>Guarantee</b>: No unresolved technical debt in critical security paths.</li></p>
+<br/>
+<p><b>Command</b>: Canonical Routing Enforcement<br/><pre>bash<br/>! grep -R --fixed-strings "?tenant=" src/app src/modules<br/>! grep -r "searchParams.get('tenant')" src/app src/modules<br/></pre><br/><li>  <b>Guarantee</b>: Prohibits usage of <code style="background:#e0e0e0; padding:2px;">?tenant=</code> query parameter or <code style="background:#e0e0e0; padding:2px;">searchParams</code> usage in UI routing.</li></p>
+<br/>
+<p><b>Command</b>: Tenant Resolution Encapsulation<br/><pre>bash<br/>grep -R "resolveTenantForUser" -n src | grep -v "src/core/context/resolveAuthContext.ts"<br/></pre><br/><li>  <b>Guarantee</b>: Ensures <code style="background:#e0e0e0; padding:2px;">resolveTenantForUser</code> is only called within the central <code style="background:#e0e0e0; padding:2px;">resolveAuthContext</code> allowed path.</li></p>
+<br/>
+<h2>9.2. Tenant Isolation Verification</h2>
+<br/>
+<p><b>Command</b>: Tenant Filter Check<br/><pre>bash<br/>grep -R ".eq(['\"]tenant_id['\"]" -n src/infra/repositories/<br/></pre><br/><li>  <b>Guarantee</b>: Inspects repositories to ensure explicit <code style="background:#e0e0e0; padding:2px;">.eq('tenant_id', ...)</code> usage.</li></p>
+<br/>
+<h2>9.3. Function Security Verification</h2>
+<br/>
+<p><b>Command</b>: Security Definer Check<br/><pre>bash<br/>grep -R "security definer" -n src/db/migrations<br/></pre><br/><li>  <b>Guarantee</b>: confirms RPCs are elevated correctly.</li></p>
+<br/>
+<p><b>Command</b>: Excessive Privilege Check<br/><pre>bash<br/>grep -R "revoke all on function .* from public, anon" -n src/db/migrations<br/></pre><br/><li>  <b>Guarantee</b>: Confirms that strict <code style="background:#e0e0e0; padding:2px;">REVOKE</code> statements exist for sensitive RPCs.</li></p>
+<br/>
+<p><b>Command</b>: Manual Membership Revalidation Check<br/><pre>bash<br/>grep -R "select 1 from public.tenant_users" -n src/db/migrations<br/></pre><br/><li>  <b>Guarantee</b>: Confirms that RPCs manually re-verify tenant membership at the start of execution.</li></p>
+<br/>
+<p><b>Command</b>: FORCE RLS Check<br/><pre>bash<br/>grep -R "force row level security" -n src/db/migrations<br/></pre><br/><li>  <b>Guarantee</b>: Confirms that <b>FORCE ROW LEVEL SECURITY</b> is enabled on sensitive tables, preventing table owners from bypassing policies.</li></p>
+<br/>
+<h2>9.4. RBAC & Module Verification</h2>
+<br/>
+<p><b>Command</b>: No Roles in Module Check<br/><pre>bash<br/>! grep -r "requiredRoles" src/modules<br/></pre><br/><li>  <b>Guarantee</b>: Ensures modules rely on Permissions, not Roles.</li></p>
+<br/>
+<p><b>Command</b>: Module Authorization Boundary<br/><pre>bash<br/>! grep -R "canAccessModule" -n src/modules<br/></pre><br/><li>  <b>Guarantee</b>: Modules cannot self-authorize. <code style="background:#e0e0e0; padding:2px;">canAccessModule</code> must only be used in the routing boundary / layout layer.</li></p>
+<br/>
+<p><b>Command</b>: Module Isolation Check<br/><pre>bash<br/>! grep -r "from '@/modules/" src/modules<br/></pre><br/><li>  <b>Guarantee</b>: Ensures NO cross-module imports. Modules must only import from <code style="background:#e0e0e0; padding:2px;">src/core</code>, <code style="background:#e0e0e0; padding:2px;">src/shared</code>, or their own internal files.</li></p>
+<br/>
+<h2>9.5. Build Integrity</h2>
+<br/>
+<p><b>Command</b>: Build<br/><pre>bash<br/>npm run build<br/></pre><br/><li>  <b>Guarantee</b>: TypeScript types match, no import errors, Next.js optimization succeeds.</li></p>
+<br/>
+<h2>9.6. Release Gate Rule</h2>
+<br/>
+<p><b>Mandatory Pre-Release Checklist</b>:</p>
+<br/>
+<p>1.  <b>Architecture</b>: All <code style="background:#e0e0e0; padding:2px;">grep</code> checks must return clean (or expected) results.<br/>2.  <b>Logic</b>: <code style="background:#e0e0e0; padding:2px;">npm run build</code> must succeed without warnings.<br/>3.  <b>State</b>: No "TODO" or "FIXME" comments in critical security paths (<code style="background:#e0e0e0; padding:2px;">src/core/security</code>, <code style="background:#e0e0e0; padding:2px;">src/db</code>).<br/>4.  <b>Database</b>: All migrations must be applied and idempotent.</p>
+<br/>
+<p><b>Invariant</b>: NO deployment may proceed if any of the above checks fail.</p>
+<br/>
+<h2>9.7. Business Hierarchy Verification (Strict)</h2>
+<br/>
+<p><b>Command</b>: No Direct SQL Writes<br/><pre>bash<br/>! grep -R "from(['\"]companies['\"])" src | grep -E "insert|update|delete"<br/>! grep -R "from(['\"]organizations['\"])" src | grep -E "insert|update|delete"<br/>! grep -R "from(['\"]projects['\"])" src | grep -E "insert|update|delete"<br/>! grep -R "from(['\"]service_offerings['\"])" src | grep -E "insert|update|delete"<br/></pre><br/><li>  <b>Guarantee</b>: Hierarchy tables are strictly locked down.</li></p>
+<br/>
+<p><b>Command</b>: RPC Existence Check<br/><pre>bash<br/>grep -R "create or replace function public.create_group" src/db/migrations<br/>grep -R "create or replace function public.create_organization" src/db/migrations<br/>grep -R "create or replace function public.create_company" src/db/migrations<br/></pre><br/><li>  <b>Guarantee</b>: verifies that mandatory RPCs are defined in migrations.</li></p>
+<br/>
+<p><b>Command</b>: Hierarchy Force RLS<br/><pre>bash<br/>grep -R "force row level security" src/db/migrations | grep -E "companies|organizations|projects|service_offerings"<br/></pre><br/><li>  <b>Guarantee</b>: Hierarchy tables are strictly locked down.</li></p>
+<br/>
+<li>  <b>Guarantee</b>: Hierarchy tables are strictly locked down.</li>
+<br/>
+<h2>9.8. 2FA Verification (Strict Evidence)</h2>
+<br/>
+<p><b>Command</b>: HEX Signature & Timing Safe Check<br/><pre>bash<br/>grep "bufferToHex" src/core/security/twofaCookie.ts<br/>grep "crypto.subtle.verify" src/core/security/twofaCookie.ts<br/>! grep "Buffer.from" src/core/security/twofaCookie.ts<br/></pre><br/><li>  <b>Guarantee</b>: Ensures signatures are HEX encoded, compared using Web Crypto, and NO Node.js Buffer usage.</li></p>
+<br/>
+<p><b>Command</b>: Payload Tenant Binding Check<br/><pre>bash<br/>grep "tenantId: string;" src/core/security/twofaCookie.ts<br/></pre><br/><li>  <b>Guarantee</b>: Payload structure MUST include strict <code style="background:#e0e0e0; padding:2px;">tenantId</code>.</li></p>
+<br/>
+<p><b>Command</b>: Guard Enforcement Check<br/><pre>bash<br/>grep "requireTwoFaVerified" src/app/\(admin\)/admin/t/\[tenantSlug\]/\[\[...slug\]\]/page.tsx<br/></pre><br/><li>  <b>Guarantee</b>: The <code style="background:#e0e0e0; padding:2px;">TenantPage</code> component enforces 2FA verification before rendering.</li></p>
+<br/>
+<p><b>Command</b>: Transport Gate Check<br/><pre>bash<br/>grep "verifyTwoFaCookie" src/middleware.ts<br/></pre><br/><li>  <b>Guarantee</b>: Middleware performs a transport-level check to fail fast.</li></p>
+<br/>
+<p><b>Command</b>: No Global 2FA Route<br/><pre>bash<br/>[ ! -d src/app/2fa ] && echo "PASS: No global 2fa route"<br/></pre><br/><li>  <b>Guarantee</b>: 2FA routes are strictly tenant-scoped under <code style="background:#e0e0e0; padding:2px;">/admin/t/[slug]/2fa</code>.</li></p>
+<br/>
+<p><b>Command</b>: RPC Existence & Security Check<br/><pre>bash<br/>grep -ir "create or replace function public.validate_twofa_session" src/db/migrations<br/>grep -ir "set search_path = public, extensions, auth" src/db/migrations<br/></pre><br/><li>  <b>Guarantee</b>: The <code style="background:#e0e0e0; padding:2px;">validate_twofa_session</code> RPC exists and uses strict search path.</li></p>
+<br/>
+<h2>9.9. I18n Verification (Strict)</h2>
+<br/>
+<p><b>Command</b>: Paranoid I18n Audit<br/><pre>bash<br/>./src/scripts/verify_i18n_strictness.sh<br/></pre><br/><li>  <b>Guarantee</b>: Enforces the following invariants:</li><br/>    1.  <b>Core Purity</b>: <code style="background:#e0e0e0; padding:2px;">src/core</code> never imports <code style="background:#e0e0e0; padding:2px;">src/shared/i18n</code>.<br/>    2.  <b>Module Isolation</b>: <code style="background:#e0e0e0; padding:2px;">src/shared/i18n</code> never imports module-specific locales.<br/>    3.  <b>No Middleware Logic</b>: Middleware does not resolve or inject locales (Auth only).<br/>    4.  <b>Zero Dependencies</b>: No <code style="background:#e0e0e0; padding:2px;">i18next</code> or external libraries allowed.</p>
+<br/>
+<p><b>Command</b>: Manual Core Check<br/><pre>bash<br/>! grep -r "from '@/shared/i18n'" src/core<br/></pre><br/><li>  <b>Guarantee</b>: Double-check that Core remains 100% translation-agnostic.</li></p>
+<br/>
+<h1>10. Security Model</h1>
+<br/>
+<h2>10.1. Authentication & Identity</h2>
+<br/>
+<p>The system utilizes <b>Supabase Auth</b> as the identity provider, but enforces strict architectural isolation between Identity (Who you are) and Access (What you can do).</p>
+<br/>
+<h3>Core Components</h3>
+<li>  <b>Identity Provider</b>: Supabase Auth (handles JWTs, emails, passwords).</li>
+<li>  <b>Session Cookie</b>: <code style="background:#e0e0e0; padding:2px;">sb-</code> tokens managed by Supabase helpers.</li>
+<li>  <b>Transport Gate</b>: <code style="background:#e0e0e0; padding:2px;">src/middleware.ts</code> validates the presence of auth tokens before any application logic runs.</li>
+<br/>
+<h3>Invariant</h3>
+> <b>No Implicit Access</b>: Being authenticated with Supabase grants <b>zero</b> permissions. It only establishes Identity. All access requires explicit Tenant Membership checks.
+<br/>
+<h2>10.2. Tenant Resolution Flow</h2>
+<br/>
+<p>Tenant Context is <b>never</b> global. It is resolved strictly per request based on the URL.</p>
+<br/>
+<p>1.  <b>URL Parsing</b>: <code style="background:#e0e0e0; padding:2px;">/admin/t/[tenantSlug]/...</code><br/>2.  <b>Resolution</b>: <code style="background:#e0e0e0; padding:2px;">resolveAuthContext</code> looks up the Tenant ID by Slug.<br/>3.  <b>Membership Check</b>: Verifies the user exists in <code style="background:#e0e0e0; padding:2px;">tenant_users</code>.<br/>4.  <b>Fail-Closed</b>: If any step fails -> 404/403 (No "default tenant" fallback).</p>
+<br/>
+<h2>10.3. Strict 2FA (Variant A)</h2>
+<br/>
+<p>For high-security operations, the system enforces a secondary, tenant-scoped authentication layer.</p>
+<br/>
+<h3>Architecture</h3>
+<br/>
+<li>  <b>Scope</b>: Per-Tenant. (Auth in Tenant A does NOT authorize Tenant B).</li>
+<li>  <b>Route</b>: <code style="background:#e0e0e0; padding:2px;">/admin/t/[tenantSlug]/2fa</code> (Canonical Interface).</li>
+<li>  <b>Persistence</b>: <code style="background:#e0e0e0; padding:2px;">2fa_session</code> cookie (Signed, HTTPOnly, Secure, SameSite=Lax).</li>
+<li>  <b>Storage</b>: DB-backed <code style="background:#e0e0e0; padding:2px;">twofa_sessions</code> table (Allows server-side revocation).</li>
+<br/>
+<h3>The Flow</h3>
+<br/>
+<p>1.  <b>User Access</b>: Code attempts to access a protected route.<br/>2.  <b>Middleware Gate</b>: Checks for valid <code style="background:#e0e0e0; padding:2px;">2fa_session</code> cookie matching <code style="background:#e0e0e0; padding:2px;">tenantSlug</code>.<br/>    *   <b>Evidence</b>: <code style="background:#e0e0e0; padding:2px;">src/middleware.ts</code> (Lines 34-42) - Reads cookie, verifies signature, checks slug.<br/>    *   <b>Heuristic</b>: Middleware does <b>NOT</b> query the DB. It only parses the signed cookie.<br/>3.  <b>Challenge</b>: If invalid/missing, redirects to <code style="background:#e0e0e0; padding:2px;">/admin/t/[tenantSlug]/2fa</code>.<br/>4.  <b>Creation</b>: User requests code -> <code style="background:#e0e0e0; padding:2px;">create_login_challenge</code> (RPC) -> Email.<br/>    *   <b>Evidence</b>: <code style="background:#e0e0e0; padding:2px;">src/app/(admin)/admin/t/[tenantSlug]/2fa/actions.ts</code> calls RPC <code style="background:#e0e0e0; padding:2px;">create_login_challenge</code>.<br/>5.  <b>Verification</b>: User submits code -> <code style="background:#e0e0e0; padding:2px;">verify_login_challenge</code> (RPC).<br/>    *   <b>Evidence</b>: <code style="background:#e0e0e0; padding:2px;">src/app/(admin)/admin/t/[tenantSlug]/2fa/actions.ts</code> calls RPC <code style="background:#e0e0e0; padding:2px;">verify_login_challenge</code>.<br/>6.  <b>Binding</b>: Server issues generic signed cookie using DB Session ID.<br/>    *   <b>Evidence</b>: <code style="background:#e0e0e0; padding:2px;">src/app/(admin)/admin/t/[tenantSlug]/2fa/actions.ts</code> (Lines 62-83) - Sets <code style="background:#e0e0e0; padding:2px;">2fa_session</code> cookie.</p>
+<br/>
+<h3>Security Invariants</h3>
+<br/>
+<p>1.  <b>RPC-Only Writes</b>:<br/>    *   <code style="background:#e0e0e0; padding:2px;">create_login_challenge</code> and <code style="background:#e0e0e0; padding:2px;">verify_login_challenge</code> are <code style="background:#e0e0e0; padding:2px;">SECURITY DEFINER</code> functions.<br/>    *   <code style="background:#e0e0e0; padding:2px;">search_path</code> is strictly locked to <code style="background:#e0e0e0; padding:2px;">public, extensions, auth</code>.<br/>    *   Public access is revoked; only <code style="background:#e0e0e0; padding:2px;">authenticated</code> role can execute.</p>
+<br/>
+<p>2.  <b>Dual-Layer Verification</b>:<br/>    *   <b>Layer 1 (Transport)</b>: Middleware checks cookie signature and tenant slug.<br/>        *   <b>Evidence</b>: <code style="background:#e0e0e0; padding:2px;">src/middleware.ts</code> -> <code style="background:#e0e0e0; padding:2px;">verifyTwoFaCookie</code>.<br/>    *   <b>Layer 2 (Truth)</b>: <code style="background:#e0e0e0; padding:2px;">serverGuard</code> checks DB for session validity (Revocation/Replay).<br/>        *   <b>Evidence</b>: <code style="background:#e0e0e0; padding:2px;">src/core/security/serverGuard.ts</code> calls <code style="background:#e0e0e0; padding:2px;">validate_twofa_session</code> RPC.<br/>        *   <b>Enforcement</b>: <code style="background:#e0e0e0; padding:2px;">src/app/(admin)/admin/t/[tenantSlug]/[[...slug]]/page.tsx</code> calls <code style="background:#e0e0e0; padding:2px;">requireTwoFaVerified</code>.</p>
+<br/>
+<p>3.  <b>Crypto & Payload</b>:<br/>    *   <b>HMAC SHA256</b>: Signatures are HEX encoded.<br/>        *   <b>Evidence</b>: <code style="background:#e0e0e0; padding:2px;">src/core/security/twofaCookie.ts</code> -> <code style="background:#e0e0e0; padding:2px;">digest('hex')</code>.<br/>    *   <b>Timing Safe</b>: Comparisons use <code style="background:#e0e0e0; padding:2px;">timingSafeEqual</code>.<br/>        *   <b>Evidence</b>: <code style="background:#e0e0e0; padding:2px;">src/core/security/twofaCookie.ts</code> -> <code style="background:#e0e0e0; padding:2px;">timingSafeEqual</code>.<br/>    *   <b>Payload</b>: Contains <code style="background:#e0e0e0; padding:2px;">tenantId</code>, <code style="background:#e0e0e0; padding:2px;">tenantSlug</code>, <code style="background:#e0e0e0; padding:2px;">userId</code>, <code style="background:#e0e0e0; padding:2px;">sessionId</code>, <code style="background:#e0e0e0; padding:2px;">iat</code>, <code style="background:#e0e0e0; padding:2px;">exp</code>.<br/>        *   <b>Evidence</b>: <code style="background:#e0e0e0; padding:2px;">src/core/security/twofaCookie.ts</code> (Interface <code style="background:#e0e0e0; padding:2px;">TwoFaPayload</code>).</p>
+<br/>
+<p>4.  <b>Session Rotation</b>:<br/>    *   Every successful verification <b>invalidates all previous 2FA sessions</b> for that user/tenant.<br/>        *   <b>Evidence</b>: <code style="background:#e0e0e0; padding:2px;">verify_login_challenge</code> RPC (SQL) updates <code style="background:#e0e0e0; padding:2px;">revoked_at</code> for old sessions.<br/>        *   <b>Logic</b>: <code style="background:#e0e0e0; padding:2px;">UPDATE public.twofa_sessions SET revoked_at = now() ...</code>.</p>
+<br/>
+<h2>10.4. RBAC Separation</h2>
+<br/>
+<p>The system enforces a strict "No Inheritance" model for RBAC.</p>
+<br/>
+<h3>Tenant RBAC (<code style="background:#e0e0e0; padding:2px;">tenant_roles</code>)</h3>
+<li>  Controls access to tenant-level modules (e.g., Dashboard, Settings).</li>
+<li>  managed via <code style="background:#e0e0e0; padding:2px;">tenant_users</code> -> <code style="background:#e0e0e0; padding:2px;">tenant_roles</code> -> <code style="background:#e0e0e0; padding:2px;">permissions</code>.</li>
+<br/>
+<h3>Company RBAC (<code style="background:#e0e0e0; padding:2px;">company_roles</code>)</h3>
+<li>  Controls access to specific Business Hierarchy nodes.</li>
+<li>  <b>Completely Independent</b> of Tenant Roles.</li>
+<li>  Being a Tenant Admin does <b>not</b> automatically grant Company Admin rights (Explicit Grant required).</li>
+<li>  Managed via <code style="background:#e0e0e0; padding:2px;">company_users</code>.</li>
+<br/>
+<h3>RPC-Only Mutation</h3>
+<li>  All RBAC changes (Add User, Grant Permission) MUST go through strict RPCs.</li>
+<li>  Direct <code style="background:#e0e0e0; padding:2px;">INSERT</code> into permission tables is blocked by RLS.</li>
+<br/>
+<h2>10.5. Fail-Closed Principles</h2>
+<br/>
+<li>  <b>Missing Cookie</b>: Redirect to Login/2FA.</li>
+<li>  <b>Invalid Slug</b>: 404 Not Found.</li>
+<li>  <b>Revoked Session</b>: DB check inside the application context fails -> Redirect.</li>
+<li>  <b>Middleware</b>: If it can't verify -> It denies.</li>
+<br/>
+<h2>10.6. I18n Isolation</h2>
+<br/>
+<p>The translation system is strictly a <b>Presentation Layer</b> concern and must <b>never</b> intersect with Security Logic.</p>
+<br/>
+<p>1.  <b>No Auth Coupling</b>: I18n logic does not have access to the <code style="background:#e0e0e0; padding:2px;">AuthContext</code> or <code style="background:#e0e0e0; padding:2px;">UserContext</code>. It reads raw cookies only.<br/>2.  <b>No RBAC Coupling</b>: "Access Denied" messages are translated <b>after</b> the security check fails. The check itself is language-agnostic.<br/>3.  <b>Core Purity</b>: The <code style="background:#e0e0e0; padding:2px;">src/core</code> domain model uses Error Codes (e.g., <code style="background:#e0e0e0; padding:2px;">AUTH_DENIED</code>, <code style="background:#e0e0e0; padding:2px;">INVALID_SLUG</code>), never translated strings.</p>
+<br/>
+<h1>11. Organization Menu & Variants System (Strict)</h1>
+<br/>
+<h2>11.1. Conceptual Model & SaaS Boundary</h2>
+<br/>
+<p>The Organization Menu System defines the <b>SaaS Boundary</b> within the Multi-Tenant architecture. It strictly enforces the hierarchy: <b>Tenant > Organization > Section > App</b>.</p>
+<br/>
+<h3>11.1.1. Tenant vs. Organization Scope</h3>
+<li>  <b>Tenant as Container</b>: The Tenant is a passive container for data and users. It <b>DOES NOT</b> define the application structure, menu, or available features.</li>
+<li>  <b>Organization as SaaS Universe</b>: The Organization is the active SaaS boundary. It defines:</li>
+    *   Which Modules are active.
+    *   How the Menu is structured (Sections).
+    *   Which Languages are supported.
+    *   Default Layouts (Variants).
+<li>  <b>No Downstream Overrides</b>: Menu structure is defined <b>exclusively</b> per <code style="background:#e0e0e0; padding:2px;">(tenant_id, organization_id)</code>. Companies and Projects <b>CANNOT</b> define or override menu structure.</li>
+<br/>
+<h3>11.1.2. Code vs. Data Authority</h3>
+<li>  <b>ModuleRegistry (Code)</b>: The immutable source of truth for *available* software capabilities (Modules). It defines what *can* exist.</li>
+<li>  <b>Organization Apps (Data)</b>: The mutable record of what *is activated* for a specific Organization.</li>
+<li>  <b>Module Integrity Rule</b>: An App cannot be activated if it does not exist in the <code style="background:#e0e0e0; padding:2px;">ModuleRegistry</code>.</li>
+<br/>
+<h3>11.1.3. Relational Decomposition (Strict Contract)</h3>
+The system rejects JSON blob storage for structure. It enforces a Mandatory Relational Decomposition Pattern:
+<br/>
+<li>  <b>Object A (Section)</b>: <code style="background:#e0e0e0; padding:2px;">organization_sections</code></li>
+<li>  <b>Object B (App Activation)</b>: <code style="background:#e0e0e0; padding:2px;">organization_apps</code></li>
+<li>  <b>Relation A↔B (Link Item)</b>: <code style="background:#e0e0e0; padding:2px;">organization_section_items</code></li>
+<li>  <b>Translation A_t</b>: <code style="background:#e0e0e0; padding:2px;">organization_section_translations</code></li>
+<li>  <b>Translation B_t</b>: <code style="background:#e0e0e0; padding:2px;">organization_app_translations</code></li>
+<br/>
+<p><b>Invariants</b>:<br/><li>  Apps <b>MUST</b> exist in <b>Object B</b> before being placed in <b>Relation A↔B</b>.</li><br/><li>  Variants <b>MUST NOT</b> replace the A↔B link table.</li><br/><li>  Decomposition is <b>mandatory</b>; no structural shortcut allowed.</li></p>
+<br/>
+<p>---</p>
+<br/>
+<h2>11.2. Administrative Responsibility Model</h2>
+<br/>
+<h3>1. Super Admin (System Operator)</h3>
+<li>  <b>Capabilities</b>: Define <code style="background:#e0e0e0; padding:2px;">ModuleRegistry</code>, Block Modules System-wide (<code style="background:#e0e0e0; padding:2px;">organization_module_overrides</code>).</li>
+<li>  <b>Scope</b>: Cross-Tenant.</li>
+<br/>
+<h3>2. Organization Owner (Admin)</h3>
+<li>  <b>Capabilities</b>:</li>
+    *   <b>Structure</b>: Manage Sections (Create/Edit/Disable).
+    *   <b>Activation</b>: Activate/Deactivate Apps.
+    *   <b>Linkage</b>: Link Apps to Sections.
+    *   <b>Ordering</b>: Define Base Order of Sections and Apps.
+    *   <b>Global Variants</b>: Create/Edit Organization-wide Variants.
+    *   <b>Defaults</b>: Set Global Default Variant & Language.
+<li>  <b>Scope</b>: Strict Organization Boundary.</li>
+<br/>
+<h3>3. End User (Member)</h3>
+<li>  <b>Capabilities</b>:</li>
+    *   <b>Local Variants</b>: Create/Edit private User Variants.
+    *   <b>Preferences</b>: Set "User Default Variant".
+    *   <b>Selection</b>: Switch "Active Variant" for session.
+    *   <b>Visibility</b>: Sees only sections/apps permitted by their RBAC.
+<li>  <b>Scope</b>: Strict User/Organization Boundary.</li>
+<br/>
+<p>---</p>
+<br/>
+<h2>11.3. Invariants & Isolation Rules</h2>
+<br/>
+<h3>11.3.1. The Structural Gate Invariant</h3>
+<b>An App must pass ALL structural gates before being visible:</b>
+<code style="background:#e0e0e0; padding:2px;">System Block</code> → <code style="background:#e0e0e0; padding:2px;">Activation</code> → <code style="background:#e0e0e0; padding:2px;">Section Membership</code> → <code style="background:#e0e0e0; padding:2px;">RBAC</code> → <code style="background:#e0e0e0; padding:2px;">Variant Visibility</code>
+<br/>
+<p>Any failure results in the App being strictly invisible.</p>
+<br/>
+<h3>11.3.2. Variant Limitations (Strict Phase 1)</h3>
+<b>A Variant cannot introduce structural nodes.</b>
+<li>  <b>Base Structure</b> (Sections + Activation + A↔B) is the <b>only canonical structural layer</b>.</li>
+<li>  Variants are <b>sparse overlays</b> for <b>App Visibility</b> and <b>App Ordering within Sections</b>.</li>
+<li>  <b>Section Reordering</b>: NOT SUPPORTED in Variants. Sections always appear in their Base Structure order.</li>
+<li>  A Variant <b>MUST NOT</b>:</li>
+    *   Introduce new apps or sections.
+    *   Move apps between sections.
+    *   Bypass RBAC or System Blocks.
+<br/>
+<h3>11.3.3. Security & RPC-Only Resolution</h3>
+<li>  <b>RPC Authority</b>: Menu structure MUST be resolved exclusively via <code style="background:#e0e0e0; padding:2px;">resolve_menu_structure</code>.</li>
+<li>  <b>No Client Authority</b>: The Client <b>MUST NEVER</b> inject RBAC permissions (e.g., <code style="background:#e0e0e0; padding:2px;">p_allowed_modules</code> is FORBIDDEN). RBAC must be resolved server-side.</li>
+<li>  <b>No Direct Writes</b>: All mutations MUST occur via <code style="background:#e0e0e0; padding:2px;">SECURITY DEFINER</code> RPCs. Tables are <code style="background:#e0e0e0; padding:2px;">REVOKE ALL</code> from public.</li>
+<br/>
+<h3>11.3.4. Fail-Closed Principles</h3>
+<li>  <b>Zero Structure</b>: If resolution yields 0 sections, return <code style="background:#e0e0e0; padding:2px;">[]</code>. No implicit default.</li>
+<li>  <b>System Block</b>: Overrides everything.</li>
+<li>  <b>Translation</b>: If translation is missing, return <b>NULL</b> (UI handles fallback). Database MUST NOT emit "MISSING_TRANS" markers.</li>
+<br/>
+<p>---</p>
+<br/>
+<h2>11.4. Menu Resolution Algorithm (Authoritative)</h2>
+<br/>
+<p>The <code style="background:#e0e0e0; padding:2px;">resolve_menu_structure</code> RPC MUST implement this pipeline:</p>
+<br/>
+<p>1.  <b>System Block</b> (Super Admin)<br/>    *   Exclude <code style="background:#e0e0e0; padding:2px;">module_id</code> in <code style="background:#e0e0e0; padding:2px;">organization_module_overrides</code> (<code style="background:#e0e0e0; padding:2px;">is_blocked=true</code>).</p>
+<br/>
+<p>2.  <b>App Activation</b> (Organization)<br/>    *   Include only <code style="background:#e0e0e0; padding:2px;">organization_apps</code> with <code style="background:#e0e0e0; padding:2px;">is_active=true</code>.</p>
+<br/>
+<p>3.  <b>Base Structure Assembly</b><br/>    *   Join <code style="background:#e0e0e0; padding:2px;">organization_sections</code> ↔ <code style="background:#e0e0e0; padding:2px;">organization_section_items</code> ↔ <code style="background:#e0e0e0; padding:2px;">organization_apps</code>.<br/>    *   Filter <code style="background:#e0e0e0; padding:2px;">is_enabled=true</code>.</p>
+<br/>
+<p>4.  <b>RBAC Filtering</b> (Internal Security)<br/>    *   <b>Strict Rule</b>: Permissions are resolved <b>internally</b> by joining <code style="background:#e0e0e0; padding:2px;">auth.permissions</code> (or equivalent).<br/>    *   <b>Input</b>: <code style="background:#e0e0e0; padding:2px;">auth.uid()</code>.<br/>    *   <b>Logic</b>: Filter Apps based on server-side permission check.<br/>    *   *Note*: If internal RBAC tables are not ready, default to "All Active Apps Visible to Members" (Fail-Open for members, Fail-Closed for non-members). <b>NEVER</b> accept client input.</p>
+<br/>
+<p>5.  <b>Variant Selection</b> (Precedence)<br/>    1.  <b>Active Session</b> (Arg <code style="background:#e0e0e0; padding:2px;">p_active_variant_id</code>).<br/>    2.  <b>User Default</b> (<code style="background:#e0e0e0; padding:2px;">user_variant_preferences</code>).<br/>    3.  <b>Global Default</b> (<code style="background:#e0e0e0; padding:2px;">organization_menu_variants</code>).<br/>    4.  <b>Base Structure</b> (Null).</p>
+<br/>
+<p>6.  <b>Variant Application</b> (Overlay)<br/>    *   If Variant ID exists:<br/>        *   Join <code style="background:#e0e0e0; padding:2px;">organization_menu_variant_items</code>.<br/>        *   <b>Hide</b>: Exclude if <code style="background:#e0e0e0; padding:2px;">is_hidden=true</code>.<br/>        *   <b>App Reorder</b>: Use <code style="background:#e0e0e0; padding:2px;">variant_items.order_index</code> for Apps within Sections.<br/>    *   <b>Strictness</b>: Sections use Base Order. Apps without variant entry inherit Base Order.</p>
+<br/>
+<p>7.  <b>Pruning & Cleanup</b><br/>    *   Remove empty Sections.<br/>    *   Return JSONB.</p>
+<br/>
+<p>---</p>
+<br/>
+<h2>11.5. Structural Tables (Reference)</h2>
+<br/>
+<h3>Category 1: Base Structure</h3>
+<li>  <code style="background:#e0e0e0; padding:2px;">organization_sections</code>: (id, tenant_id, org_id, order_index, is_enabled)</li>
+<li>  <code style="background:#e0e0e0; padding:2px;">organization_section_items</code>: (id, tenant_id, org_id, section_id, app_id, order_index)</li>
+<br/>
+<h3>Category 2: Activation</h3>
+<li>  <code style="background:#e0e0e0; padding:2px;">organization_apps</code>: (id, tenant_id, org_id, module_id, is_active)</li>
+<br/>
+<h3>Category 3: Translations</h3>
+<li>  <code style="background:#e0e0e0; padding:2px;">organization_languages</code>, <code style="background:#e0e0e0; padding:2px;">organization_section_translations</code>, <code style="background:#e0e0e0; padding:2px;">organization_app_translations</code>.</li>
+<br/>
+<h3>Category 4: Variants</h3>
+<li>  <code style="background:#e0e0e0; padding:2px;">organization_menu_variants</code>: (id, tenant_id, org_id, is_global, is_default, owner_user_id)</li>
+<li>  <code style="background:#e0e0e0; padding:2px;">organization_menu_variant_items</code>: (id, tenant_id, org_id, variant_id, section_id, app_id, order_index, is_hidden)</li>
+    *   *Note*: <code style="background:#e0e0e0; padding:2px;">app_id</code> is NOT NULL (Section reorder not supported).
+<br/>
+<h3>Category 5: Preferences</h3>
+<li>  <code style="background:#e0e0e0; padding:2px;">user_variant_preferences</code>: (user_id, org_id, variant_id)</li>
+<br/>
+<h3>Category 6: Overrides</h3>
+<li>  <code style="background:#e0e0e0; padding:2px;">organization_module_overrides</code>: (org_id, module_id, is_blocked)</li>
+<br/>
+<p>---</p>
+<br/>
+<h2>11.6. Structural Integrity Guarantees</h2>
+<br/>
+<p>1.  <b>Composite Scope</b>: All FKs MUST include <code style="background:#e0e0e0; padding:2px;">(tenant_id, organization_id)</code>.<br/>2.  <b>One Global Default</b>: Unique Index on <code style="background:#e0e0e0; padding:2px;">organization_menu_variants</code> (org_id, is_global=true, is_default=true).<br/>3.  <b>One User Default</b>: Unique Index on <code style="background:#e0e0e0; padding:2px;">user_variant_preferences</code> (user_id, org_id).<br/>4.  <b>A/B Separation</b>: <code style="background:#e0e0e0; padding:2px;">link_app_to_section</code> RPC MUST fail if App is not in <code style="background:#e0e0e0; padding:2px;">organization_apps</code>.<br/>5.  <b>Strict Isolation</b>: No cross-org references allowed.<br/></p>
+        
+    </body>
+    </html>

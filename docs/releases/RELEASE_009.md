@@ -31,4 +31,4 @@ This release introduces the **Organization Menu & Variants System**, a critical 
 - **Strict Compliance**: All findings from the audit have been remediated.
 
 ## Artifacts
-- `docs/Modular_monolith_architecture_v0.0.2-prealfa.md`: The complete architectural guide.
+- `docs/Modular_monolith_architecture_v0.0.2-prealfa.doc`: The complete architectural guide (HTML/DOC format).
