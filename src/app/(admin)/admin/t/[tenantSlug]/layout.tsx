@@ -1,11 +1,10 @@
 // mateusz poponczyk
 import { ReactNode } from 'react';
 import { getMenuItems } from '@/core/menu';
-import { AdminLayout as CoreLayout } from '@/core/layout/AdminLayout';
+import { LegacyAdminLayout } from '@/components/legacy/admin/LegacyAdminLayout';
 import { resolveAuthContext } from '@/core/context/resolveAuthContext';
 import { redirect } from 'next/navigation';
-import { cookies } from 'next/headers';
-import { verifyTwoFaCookie } from '@/core/security/twofaCookie';
+import { signOutAction } from '@/app/actions';
 import { createAuthClient } from '@/infra/supabase/server-auth';
 
 export default async function TenantLayout({
@@ -26,24 +25,34 @@ export default async function TenantLayout({
 
     const { userContext, tenantContext } = authContext;
 
-    // 1. Get Pathname (Avoid Loop)
-    const { headers: headersList } = require('next/headers');
-    const headerStore = await headersList();
-    const pathname = headerStore.get('x-pathname') || '';
+    // 1. Fetch User Details for Display (Separate from Auth Context)
+    const supabase = createAuthClient();
+    const { data: { user } } = await supabase.auth.getUser();
 
-    // Check if we are already on 2FA page (or Actions)
-    const is2FaPage = pathname.includes('/2fa');
-
-    // Check if we are already on 2FA page
-    // (Middleware handles transport gate, Page handles strict DB check)
-    // Layout focuses on Menu composition.
-
-    // 3. Fetch Menu (Only reached if valid or on 2FA page)
+    // 3. Fetch Menu
     const menuItems = getMenuItems(tenantContext, userContext);
 
+    // Filter/Map items for Legacy Layout
+    const sidebarItems = menuItems.map(m => ({
+        id: m.id,
+        name: m.name,
+        // STRIP /admin prefix because LegacyAdminLayout PREPENDS /admin/t/[slug]
+        path: m.path.replace(/^\/admin/, ''),
+        order: m.order,
+        group: m.group
+    }));
+
     return (
-        <CoreLayout menuItems={menuItems}>
+        <LegacyAdminLayout
+            sidebarItems={sidebarItems}
+            tenantSlug={tenantSlug}
+            user={{
+                email: user?.email,
+                full_name: user?.user_metadata?.full_name || user?.email // Fallback
+            }}
+            onLogout={signOutAction}
+        >
             {children}
-        </CoreLayout>
+        </LegacyAdminLayout>
     );
 }
