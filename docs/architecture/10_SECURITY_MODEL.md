@@ -59,6 +59,7 @@ For high-security operations, the system enforces a secondary, tenant-scoped aut
     *   **Layer 2 (Truth)**: `serverGuard` checks DB for session validity (Revocation/Replay).
         *   **Evidence**: `src/core/security/serverGuard.ts` calls `validate_twofa_session` RPC.
         *   **Enforcement**: `src/app/(admin)/admin/t/[tenantSlug]/[[...slug]]/page.tsx` calls `requireTwoFaVerified`.
+        *   **Layout Guard**: `src/app/(admin)/admin/t/[tenantSlug]/(dashboard)/layout.tsx` explicitly checks `2fa_session` cookie if Supabase AAL is not 'aal2' (Custom 2FA Fallback).
 
 3.  **Crypto & Payload**:
     *   **HMAC SHA256**: Signatures are HEX encoded.

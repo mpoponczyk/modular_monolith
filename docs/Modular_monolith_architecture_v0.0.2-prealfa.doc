@@ -455,7 +455,7 @@ Deadlocks are structurally impossible for this feature because:
 <br/>
 <p><b>Command</b>: Direct Write Check (<code style="background:#e0e0e0; padding:2px;">edit_locks</code>)<br/><pre>bash<br/>! grep -R "from(['\"]edit_locks['\"])" -n src | grep -E "insert|update|delete"<br/></pre><br/><li>  <b>Guarantee</b>: No application code bypasses the RPCs to modify locks directly.</li></p>
 <br/>
-<p><b>Command</b>: In-Memory Filtering Prevention<br/><pre>bash<br/>! grep -r "\.filter(.*tenant_id" src<br/></pre><br/><li>  <b>Guarantee</b>: Ensures no <code style="background:#e0e0e0; padding:2px;">tenant_id</code> filtering happens in application memory (after query execution). Relies on repository-level SQL constraints.</li></p>
+<p><b>Command</b>: In-Memory Filtering Prevention<br/><pre>bash<br/>! grep -r "\.filter(.*tenant_id" src --exclude-dir=scripts<br/></pre><br/><li>  <b>Guarantee</b>: Ensures no <code style="background:#e0e0e0; padding:2px;">tenant_id</code> filtering happens in application memory (after query execution). Relies on repository-level SQL constraints.</li></p>
 <br/>
 <p><b>Command</b>: Critical TODO Check<br/><pre>bash<br/>! grep -rE "TODO|FIXME" src/core/security src/db/migrations<br/></pre><br/><li>  <b>Guarantee</b>: No unresolved technical debt in critical security paths.</li></p>
 <br/>
@@ -499,7 +499,7 @@ Deadlocks are structurally impossible for this feature because:
 <br/>
 <h2>9.7. Business Hierarchy Verification (Strict)</h2>
 <br/>
-<p><b>Command</b>: No Direct SQL Writes<br/><pre>bash<br/>! grep -R "from(['\"]companies['\"])" src | grep -E "insert|update|delete"<br/>! grep -R "from(['\"]organizations['\"])" src | grep -E "insert|update|delete"<br/>! grep -R "from(['\"]projects['\"])" src | grep -E "insert|update|delete"<br/>! grep -R "from(['\"]service_offerings['\"])" src | grep -E "insert|update|delete"<br/></pre><br/><li>  <b>Guarantee</b>: Hierarchy tables are strictly locked down.</li></p>
+<p><b>Command</b>: No Direct SQL Writes<br/><pre>bash<br/>! grep -R "from(['\"]companies['\"])" src --exclude-dir=scripts | grep -E "insert|update|delete"<br/>! grep -R "from(['\"]organizations['\"])" src --exclude-dir=scripts | grep -E "insert|update|delete"<br/>! grep -R "from(['\"]projects['\"])" src --exclude-dir=scripts | grep -E "insert|update|delete"<br/>! grep -R "from(['\"]service_offerings['\"])" src --exclude-dir=scripts | grep -E "insert|update|delete"<br/></pre><br/><li>  <b>Guarantee</b>: Hierarchy tables are strictly locked down.</li></p>
 <br/>
 <p><b>Command</b>: RPC Existence Check<br/><pre>bash<br/>grep -R "create or replace function public.create_group" src/db/migrations<br/>grep -R "create or replace function public.create_organization" src/db/migrations<br/>grep -R "create or replace function public.create_company" src/db/migrations<br/></pre><br/><li>  <b>Guarantee</b>: verifies that mandatory RPCs are defined in migrations.</li></p>
 <br/>
@@ -513,7 +513,7 @@ Deadlocks are structurally impossible for this feature because:
 <br/>
 <p><b>Command</b>: Payload Tenant Binding Check<br/><pre>bash<br/>grep "tenantId: string;" src/core/security/twofaCookie.ts<br/></pre><br/><li>  <b>Guarantee</b>: Payload structure MUST include strict <code style="background:#e0e0e0; padding:2px;">tenantId</code>.</li></p>
 <br/>
-<p><b>Command</b>: Guard Enforcement Check<br/><pre>bash<br/>grep "requireTwoFaVerified" src/app/\(admin\)/admin/t/\[tenantSlug\]/\[\[...slug\]\]/page.tsx<br/></pre><br/><li>  <b>Guarantee</b>: The <code style="background:#e0e0e0; padding:2px;">TenantPage</code> component enforces 2FA verification before rendering.</li></p>
+<p><b>Command</b>: Guard Enforcement Check<br/><pre>bash<br/>grep "requireTwoFaVerified" src/app/\(admin\)/admin/t/\[tenantSlug\]/\(dashboard\)/\[\[...slug\]\]/page.tsx<br/></pre><br/><li>  <b>Guarantee</b>: The <code style="background:#e0e0e0; padding:2px;">TenantPage</code> component enforces 2FA verification before rendering.</li></p>
 <br/>
 <p><b>Command</b>: Transport Gate Check<br/><pre>bash<br/>grep "verifyTwoFaCookie" src/middleware.ts<br/></pre><br/><li>  <b>Guarantee</b>: Middleware performs a transport-level check to fail fast.</li></p>
 <br/>

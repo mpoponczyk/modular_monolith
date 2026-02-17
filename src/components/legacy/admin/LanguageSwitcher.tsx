@@ -19,8 +19,6 @@ import { LOCALE_COOKIE_NAME } from '@/shared/i18n/settings';
 const languages = [
     { code: 'pl', name: 'Polski', flag: '🇵🇱' },
     { code: 'en', name: 'English', flag: '🇬🇧' },
-    { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
-    { code: 'ua', name: 'Українська', flag: '🇺🇦' },
 ]
 
 export default function LanguageSwitcher() {
@@ -49,7 +47,7 @@ export default function LanguageSwitcher() {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="gap-2 text-blue-100 hover:text-white hover:bg-blue-800">
+                <Button variant="ghost" size="sm" className="gap-2 text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent">
                     <span className="text-lg">{currentLanguage.flag}</span>
                     <Globe className="h-4 w-4" />
                 </Button>
@@ -59,7 +57,7 @@ export default function LanguageSwitcher() {
                     <DropdownMenuItem
                         key={lang.code}
                         onClick={() => handleLocaleChange(lang.code)}
-                        className={lang.code === currentCode ? 'bg-blue-100 text-blue-900 font-medium' : ''}
+                        className={lang.code === currentCode ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium' : ''}
                     >
                         <span className="mr-2 text-lg">{lang.flag}</span>
                         {lang.name}

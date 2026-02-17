@@ -14,18 +14,9 @@ import { ModuleDefinition } from './types';
 
 // IMPORT MODULES HERE
 import { ExampleDashboardModule } from '../modules/example-dashboard';
-import { OrganizationsModule } from '../modules/organizations';
-import { CompaniesModule } from '../modules/companies';
-import { ProjectsModule } from '../modules/projects';
-import { ServiceOfferingsModule } from '../modules/service-offerings';
-
 // REGISTER MODULES HERE
 const registeredModules: ModuleDefinition[] = [
     ExampleDashboardModule,
-    OrganizationsModule,
-    CompaniesModule,
-    ProjectsModule,
-    ServiceOfferingsModule,
 ];
 
 export const moduleRegistry = {

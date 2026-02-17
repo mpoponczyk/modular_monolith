@@ -1,8 +1,10 @@
 "use client"
 
+import Link from "next/link"
+import { LayoutGrid } from "lucide-react"
+import LanguageSwitcher from "@/components/legacy/admin/LanguageSwitcher"
 import { Button } from "@/components/legacy/ui/button"
 import { Input } from "@/components/legacy/ui/input"
-import { LegacyHeader } from "@/components/legacy/admin/LegacyHeader"
 import { Shield, Lock, Mail, Loader2 } from "lucide-react"
 import { useTranslation } from "@/shared/i18n/client"
 
@@ -14,10 +16,27 @@ interface LegacyLoginLayoutProps {
 
 export function LegacyLoginLayout({ onLogin, error, loading }: LegacyLoginLayoutProps) {
     const { t } = useTranslation();
+    const [localLoading, setLocalLoading] = useState(false);
+    const isLoading = loading || localLoading;
 
     return (
         <div className="min-h-screen flex flex-col font-sans bg-slate-50 relative overflow-hidden">
-            <LegacyHeader />
+            {/* Inline Header (Public/Login) */}
+            <header className="h-12 bg-[#172554] border-b border-blue-900/50 text-white flex items-center px-4 shadow-md z-50 sticky top-0 font-sans transition-colors duration-300">
+                <div className="flex items-center gap-2">
+                    <Link
+                        href="/login"
+                        className="flex items-center gap-2 font-bold text-lg hover:text-blue-200 transition-colors"
+                    >
+                        <LayoutGrid size={20} />
+                        modMonolith
+                    </Link>
+                </div>
+
+                <nav className="ml-auto flex items-center gap-4">
+                    <LanguageSwitcher />
+                </nav>
+            </header>
 
             <div className="flex-1 flex items-center justify-center relative">
                 {/* Background Orbs */}
@@ -40,7 +59,10 @@ export function LegacyLoginLayout({ onLogin, error, loading }: LegacyLoginLayout
                         </p>
                     </div>
 
-                    <form action={onLogin}>
+                    <form action={(formData) => {
+                        setLocalLoading(true);
+                        onLogin(formData);
+                    }}>
                         {/* Card Content equivalent */}
                         <div className="space-y-4 px-6 pb-6">
                             {error && (
@@ -59,7 +81,7 @@ export function LegacyLoginLayout({ onLogin, error, loading }: LegacyLoginLayout
                                         placeholder={t('email_login_placeholder')}
                                         required
                                         className="pl-10 h-11 bg-slate-50/50 border-slate-200 focus:ring-blue-500 transition-all font-medium"
-                                        disabled={loading}
+                                        disabled={isLoading}
                                     />
                                 </div>
                             </div>
@@ -74,7 +96,7 @@ export function LegacyLoginLayout({ onLogin, error, loading }: LegacyLoginLayout
                                         required
                                         className="pl-10 h-11 bg-slate-50/50 border-slate-200 focus:ring-blue-500 transition-all font-medium"
                                         placeholder={t('password_placeholder')}
-                                        disabled={loading}
+                                        disabled={isLoading}
                                     />
                                 </div>
                             </div>
@@ -85,9 +107,9 @@ export function LegacyLoginLayout({ onLogin, error, loading }: LegacyLoginLayout
                             <Button
                                 type="submit"
                                 className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg shadow-lg hover:shadow-xl transition-all"
-                                disabled={loading}
+                                disabled={isLoading}
                             >
-                                {loading ? (
+                                {isLoading ? (
                                     <>
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                         {t('authenticating')}

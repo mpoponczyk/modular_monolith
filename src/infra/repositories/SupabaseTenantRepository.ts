@@ -36,26 +36,26 @@ export class SupabaseTenantRepository implements ITenantRepository {
             return data as Tenant;
         }
 
-        // 2. Implicit Resolution (Strict: Count = 1)
-        // We need to find all tenants this user belongs to.
-        const { data: memberships, error: memError } = await supabase
-            .from('tenant_users')
-            .select('tenant_id, tenants(*)')
-            .eq('user_id', userId);
+        // 2. Implicit Resolution (Strict: RPC for Safety)
+        // Use SECURITY DEFINER RPC to fetch tenants tenant_users RLS might be too strict.
+        const { data: tenants, error } = await supabase.rpc('resolve_user_tenants');
 
-        if (memError || !memberships) return null;
+        if (error || !tenants) return null;
 
-        if (memberships.length === 1) {
+        if (tenants.length === 1) {
             // Exactly one tenant -> Return it.
-            // memberships[0].tenants is the joined tenant data.
-            // Supabase returns it as an object or array depending on relationship.
-            // Assuming 1:1 in this join semantic for the row.
-            const tenantData = memberships[0].tenants;
-            if (Array.isArray(tenantData)) return tenantData[0] as Tenant; // Should not happen with single join
-            return tenantData as unknown as Tenant;
+            // RPC returns { tenant_id, slug, name }. We map to Tenant type.
+            // Since RPC filters for ACTIVE tenants, we can safely set status='active'.
+            const t = tenants[0];
+            return {
+                id: t.tenant_id,
+                slug: t.slug,
+                name: t.name,
+                status: 'active'
+            } as Tenant;
         }
 
-        if (memberships.length > 1) {
+        if (tenants.length > 1) {
             // Ambiguous -> strict requirement involves fail-closed or special handling.
             // Return null to trigger 409/Select Tenant upstream.
             return null;

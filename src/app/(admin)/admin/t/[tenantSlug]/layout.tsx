@@ -20,6 +20,17 @@ export default async function TenantLayout({
     const authContext = await resolveAuthContext(tenantSlug);
 
     if (!authContext) {
+        // Strict Check: Is it Auth Failure or Tenant Failure?
+        const { getSession } = await import('@/core/auth/getSession');
+        const session = await getSession();
+
+        if (session) {
+            // User is logged in, but Context failed (Tenant not found or Access Denied)
+            // STRICT: 404 (Security by Obscurity)
+            const { notFound } = await import('next/navigation');
+            notFound();
+        }
+
         redirect('/login');
     }
 
@@ -29,30 +40,12 @@ export default async function TenantLayout({
     const supabase = createAuthClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    // 3. Fetch Menu
-    const menuItems = getMenuItems(tenantContext, userContext);
-
-    // Filter/Map items for Legacy Layout
-    const sidebarItems = menuItems.map(m => ({
-        id: m.id,
-        name: m.name,
-        // STRIP /admin prefix because LegacyAdminLayout PREPENDS /admin/t/[slug]
-        path: m.path.replace(/^\/admin/, ''),
-        order: m.order,
-        group: m.group
-    }));
-
+    // 3. User & Tenant Resolved -> Render Children
+    // UI (Sidebar/Header) is handled in sub-layouts (e.g. (dashboard)/layout.tsx)
+    // to strictly allow standalone pages like 2FA without menu leakage.
     return (
-        <LegacyAdminLayout
-            sidebarItems={sidebarItems}
-            tenantSlug={tenantSlug}
-            user={{
-                email: user?.email,
-                full_name: user?.user_metadata?.full_name || user?.email // Fallback
-            }}
-            onLogout={signOutAction}
-        >
+        <>
             {children}
-        </LegacyAdminLayout>
+        </>
     );
 }

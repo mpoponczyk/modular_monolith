@@ -73,7 +73,7 @@ The system uses a strict, deterministic resolution process:
 2.  **Validation**: If the slug is provided but invalid (not found/no access) -> **Fail-Closed** (Redirect to Login/404).
 3.  **Missing Slug**:
     -   **1 Tenant**: Implicitly resolved (Auto-Redirect to Canonical).
-    -   **>1 Tenant**: Ambiguous -> **409 Conflict** (Redirect to Tenant Selection).
+    -   **>1 Tenant**: Ambiguous -> **Redirect to Tenant Selection Page** (`/admin/select-tenant`).
     -   **0 Tenants**: No Access -> **Fail** (403/404).
 4.  **Constraints**:
     -   No support for `?tenant=` query parameters in UI.

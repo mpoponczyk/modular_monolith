@@ -3,5 +3,23 @@
     "cancel": "Cancel",
     "save": "Save",
     "loading": "Loading...",
-    "error_generic": "An error occurred"
+    "error_generic": "An error occurred",
+    "dashboard": {
+        "title": "Dashboard",
+        "welcome": "Welcome to the Modular Monolith Admin Panel."
+    },
+    "sidebar": {
+        "app_library": "App Library",
+        "dashboard": "Dashboard",
+        "menu": "Menu"
+    },
+    "apps": {
+        "title": "App Library",
+        "sections": {
+            "general": "General",
+            "finance": "Finance",
+            "hr": "HR",
+            "operations": "Operations"
+        }
+    }
 }

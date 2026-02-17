@@ -5,7 +5,8 @@ CREATE OR REPLACE FUNCTION public.resolve_user_tenants()
 RETURNS TABLE (
   tenant_id uuid,
   slug text,
-  name text
+  name text,
+  status text
 ) 
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -16,7 +17,8 @@ BEGIN
   SELECT 
     t.id as tenant_id,
     t.slug,
-    t.name
+    t.name,
+    t.status
   FROM public.tenants t
   JOIN public.tenant_users tu ON t.id = tu.tenant_id
   WHERE tu.user_id = auth.uid()

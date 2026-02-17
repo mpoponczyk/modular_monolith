@@ -3,5 +3,23 @@
     "cancel": "Anuluj",
     "save": "Zapisz",
     "loading": "Ładowanie...",
-    "error_generic": "Wystąpił błąd"
+    "error_generic": "Wystąpił błąd",
+    "dashboard": {
+        "title": "Panel Główny",
+        "welcome": "Witamy w Panelu Administracyjnym Modular Monolith."
+    },
+    "sidebar": {
+        "app_library": "Biblioteka Aplikacji",
+        "dashboard": "Panel Główny",
+        "menu": "Menu"
+    },
+    "apps": {
+        "title": "Biblioteka Aplikacji",
+        "sections": {
+            "general": "Ogólne",
+            "finance": "Finanse",
+            "hr": "Kadry i Płace",
+            "operations": "Operacje"
+        }
+    }
 }

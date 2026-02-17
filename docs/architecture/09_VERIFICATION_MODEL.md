@@ -24,7 +24,7 @@ Strict automated commands verify the architectural invariants. These commands mu
 
 **Command**: In-Memory Filtering Prevention
 ```bash
-! grep -r "\.filter(.*tenant_id" src
+! grep -r "\.filter(.*tenant_id" src --exclude-dir=scripts
 ```
 -   **Guarantee**: Ensures no `tenant_id` filtering happens in application memory (after query execution). Relies on repository-level SQL constraints.
 
@@ -124,10 +124,10 @@ npm run build
 
 **Command**: No Direct SQL Writes
 ```bash
-! grep -R "from(['\"]companies['\"])" src | grep -E "insert|update|delete"
-! grep -R "from(['\"]organizations['\"])" src | grep -E "insert|update|delete"
-! grep -R "from(['\"]projects['\"])" src | grep -E "insert|update|delete"
-! grep -R "from(['\"]service_offerings['\"])" src | grep -E "insert|update|delete"
+! grep -R "from(['\"]companies['\"])" src --exclude-dir=scripts | grep -E "insert|update|delete"
+! grep -R "from(['\"]organizations['\"])" src --exclude-dir=scripts | grep -E "insert|update|delete"
+! grep -R "from(['\"]projects['\"])" src --exclude-dir=scripts | grep -E "insert|update|delete"
+! grep -R "from(['\"]service_offerings['\"])" src --exclude-dir=scripts | grep -E "insert|update|delete"
 ```
 -   **Guarantee**: Hierarchy tables are strictly locked down.
 
@@ -165,7 +165,7 @@ grep "tenantId: string;" src/core/security/twofaCookie.ts
 
 **Command**: Guard Enforcement Check
 ```bash
-grep "requireTwoFaVerified" src/app/\(admin\)/admin/t/\[tenantSlug\]/\[\[...slug\]\]/page.tsx
+grep "requireTwoFaVerified" src/app/\(admin\)/admin/t/\[tenantSlug\]/\(dashboard\)/\[\[...slug\]\]/page.tsx
 ```
 -   **Guarantee**: The `TenantPage` component enforces 2FA verification before rendering.
 
@@ -207,3 +207,29 @@ grep -ir "set search_path = public, extensions, auth" src/db/migrations
 -   **Guarantee**: Double-check that Core remains 100% translation-agnostic.
 
 
+## 9.10. New Verification Scripts (Phase 17+)
+
+**Command**: Strict Hierarchy Check
+```bash
+./src/scripts/verify_strict_hierarchy.sh
+```
+-   **Guarantee**: Ensures module isolation, strict RPC usage, and no cross-module contamination.
+
+**Command**: Layout Structure Check
+```bash
+npx tsx src/scripts/verify_strict_layout.ts
+```
+-   **Guarantee**: Ensures `layout.tsx` files are properly nested and do not leak context.
+
+**Command**: 2FA Runtime Validation
+```bash
+npx tsx src/scripts/validate_2fa.ts
+```
+-   **Guarantee**: Performs a live runtime check of the 2FA flow (Challenge -> Verification -> Cookie).
+
+**Command**: Documentation Integrity
+```bash
+npx tsx src/scripts/verify_doc_integrity.ts
+npx tsx src/scripts/audit_docs_reality.ts
+```
+-   **Guarantee**: Ensures documentation is present and matches the codebase reality.

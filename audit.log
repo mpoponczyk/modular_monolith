@@ -1,0 +1,360 @@
+🔍 Starting Paranoid Documentation Audit...
+
+📄 Auditing 09_VERIFICATION_MODEL.md commands...
+> Executing: "! grep -r \"server-admin\" src/app src/core src/infra | grep -v \"seed\" | grep -v \"migration\""
+✅ PASS
+> Executing: "! grep -r \"createAdminClient\" src/app src/modules src/core"
+✅ PASS
+> Executing: "! grep -R \"from(['\\\"]edit_locks['\\\"])\" -n src | grep -E \"insert|update|delete\""
+✅ PASS
+> Executing: "! grep -r \"\\.filter(.*tenant_id\" src"
+src/scripts/manual_audit.sh:grep -r "\.filter(.*tenant_id" src --exclude-dir=scripts && (echo "❌ in-memory tenant filtering found" && exit 1) || echo "✅ ok"
+❌ FAIL: Command failed: ! grep -r "\.filter(.*tenant_id" src
+DEBUG: Failed at command execution
+> Executing: "! grep -rE \"TODO|FIXME\" src/core/security src/db/migrations"
+✅ PASS
+> Executing: "! grep -R --fixed-strings \"?tenant=\" src/app src/modules"
+✅ PASS
+> Executing: "! grep -r \"searchParams.get('tenant')\" src/app src/modules"
+✅ PASS
+> Executing: "grep -R \"resolveTenantForUser\" -n src | grep -v \"src/core/context/resolveAuthContext.ts\""
+src/infra/repositories/SupabaseTenantRepository.ts:8:    async resolveTenantForUser(userId: string, tenantSlug?: string): Promise<Tenant | null> {
+src/core/application/ports/ITenantRepository.ts:5:    resolveTenantForUser(userId: string, tenantSlug?: string): Promise<Tenant | null>;
+✅ PASS
+> Executing: "grep -R \".eq(['\\\"]tenant_id['\\\"]\" -n src/infra/repositories/"
+src/infra/repositories//SupabaseOrganizationRepository.ts:12:            .eq('tenant_id', tenantId);
+src/infra/repositories//SupabaseOrganizationRepository.ts:24:            .eq('tenant_id', tenantId)
+src/infra/repositories//SupabaseOrganizationRepository.ts:97:            .eq('tenant_id', tenantId);
+src/infra/repositories//SupabaseCompanyRbacRepository.ts:25:            .eq('tenant_id', tenantId);
+src/infra/repositories//SupabaseCompanyRbacRepository.ts:55:            .eq('tenant_id', tenantId);
+src/infra/repositories//SupabaseCompanyRbacRepository.ts:67:            .eq('tenant_id', tenantId);
+src/infra/repositories//SupabaseTenantRepository.ts:72:        // Strict Rule: .eq('tenant_id', tenantId)
+src/infra/repositories//SupabaseTenantRepository.ts:76:            .eq('tenant_id', tenantId);
+src/infra/repositories//SupabaseGroupRepository.ts:12:            .eq('tenant_id', tenantId);
+src/infra/repositories//SupabaseGroupRepository.ts:24:            .eq('tenant_id', tenantId)
+src/infra/repositories//SupabaseGroupRepository.ts:94:            .eq('tenant_id', tenantId);
+src/infra/repositories//SupabaseCompanyRepository.ts:12:            .eq('tenant_id', tenantId);
+src/infra/repositories//SupabaseCompanyRepository.ts:24:            .eq('tenant_id', tenantId)
+src/infra/repositories//SupabaseUserRepository.ts:15:        // Rule: .eq('tenant_id', tenantId) MUST be present.
+src/infra/repositories//SupabaseUserRepository.ts:35:            .eq('tenant_id', tenantId) // STRICT TENANT FILTER
+src/infra/repositories//SupabaseProjectRepository.ts:12:            .eq('tenant_id', tenantId);
+src/infra/repositories//SupabaseProjectRepository.ts:29:            .eq('tenant_id', tenantId)
+src/infra/repositories//SupabaseProjectRepository.ts:100:            .eq('tenant_id', tenantId);
+src/infra/repositories//SupabaseServiceOfferingRepository.ts:12:            .eq('tenant_id', tenantId);
+src/infra/repositories//SupabaseServiceOfferingRepository.ts:29:            .eq('tenant_id', tenantId)
+src/infra/repositories//SupabaseServiceOfferingRepository.ts:102:            .eq('tenant_id', tenantId);
+✅ PASS
+> Executing: "grep -R \"security definer\" -n src/db/migrations"
+src/db/migrations/00000000000000_consolidated_schema.sql:131:security definer
+src/db/migrations/00000000000000_consolidated_schema.sql:188:security definer
+src/db/migrations/00000000000000_consolidated_schema.sql:254:security definer
+src/db/migrations/00000000000000_consolidated_schema.sql:465:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:482:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:504:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:523:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:541:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:569:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:589:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:615:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:648:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:669:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:698:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:722:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:754:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:777:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:800:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:827:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:854:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:879:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:903:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:926:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:950:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:981:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:1002:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:1026:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:1049:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:1077:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:1099:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:1133:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:1156:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:1194:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:1263:language plpgsql security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:1316:language plpgsql security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:1390:LANGUAGE plpgsql security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:1423:LANGUAGE plpgsql security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:1462:LANGUAGE plpgsql security definer set search_path = public, extensions, auth
+✅ PASS
+> Executing: "grep -R \"revoke all on function .* from public, anon\" -n src/db/migrations"
+src/db/migrations/00000000000000_consolidated_schema.sql:149:revoke all on function public.enforce_project_company_org_match() from public, anon;
+src/db/migrations/00000000000000_consolidated_schema.sql:207:revoke all on function public.enforce_offering_company_project_match() from public, anon;
+src/db/migrations/00000000000000_consolidated_schema.sql:264:revoke all on function public.enforce_company_perm_scope() from public, anon;
+src/db/migrations/00000000000000_consolidated_schema.sql:477:revoke all on function public.verify_tenant_membership(uuid) from public, anon;
+src/db/migrations/00000000000000_consolidated_schema.sql:500:revoke all on function public.create_group(uuid, text) from public, anon;
+src/db/migrations/00000000000000_consolidated_schema.sql:519:revoke all on function public.rename_group(uuid, uuid, text) from public, anon;
+src/db/migrations/00000000000000_consolidated_schema.sql:537:revoke all on function public.delete_group(uuid, uuid) from public, anon;
+src/db/migrations/00000000000000_consolidated_schema.sql:565:revoke all on function public.add_group_member(uuid, uuid, uuid) from public, anon;
+src/db/migrations/00000000000000_consolidated_schema.sql:584:revoke all on function public.remove_group_member(uuid, uuid, uuid) from public, anon;
+src/db/migrations/00000000000000_consolidated_schema.sql:611:revoke all on function public.create_organization(uuid, text, uuid) from public, anon;
+src/db/migrations/00000000000000_consolidated_schema.sql:644:revoke all on function public.update_organization(uuid, uuid, text, uuid) from public, anon;
+src/db/migrations/00000000000000_consolidated_schema.sql:665:revoke all on function public.delete_organization(uuid, uuid) from public, anon;
+src/db/migrations/00000000000000_consolidated_schema.sql:693:revoke all on function public.link_company_to_org(uuid, uuid, uuid) from public, anon;
+src/db/migrations/00000000000000_consolidated_schema.sql:716:revoke all on function public.unlink_company_from_org(uuid, uuid, uuid) from public, anon;
+src/db/migrations/00000000000000_consolidated_schema.sql:750:revoke all on function public.create_company(uuid, text) from public, anon;
+src/db/migrations/00000000000000_consolidated_schema.sql:773:revoke all on function public.update_company(uuid, uuid, text) from public, anon;
+src/db/migrations/00000000000000_consolidated_schema.sql:795:revoke all on function public.delete_company(uuid, uuid) from public, anon;
+src/db/migrations/00000000000000_consolidated_schema.sql:823:revoke all on function public.create_project(uuid, uuid, text) from public, anon;
+src/db/migrations/00000000000000_consolidated_schema.sql:848:revoke all on function public.link_company_to_project(uuid, uuid, uuid) from public, anon;
+src/db/migrations/00000000000000_consolidated_schema.sql:874:revoke all on function public.create_service_offering(uuid, uuid, text, uuid) from public, anon;
+src/db/migrations/00000000000000_consolidated_schema.sql:899:revoke all on function public.update_project(uuid, uuid, text) from public, anon;
+src/db/migrations/00000000000000_consolidated_schema.sql:922:revoke all on function public.delete_project(uuid, uuid) from public, anon;
+src/db/migrations/00000000000000_consolidated_schema.sql:946:revoke all on function public.unlink_company_from_project(uuid, uuid, uuid) from public, anon;
+src/db/migrations/00000000000000_consolidated_schema.sql:977:revoke all on function public.update_service_offering(uuid, uuid, text, uuid) from public, anon;
+src/db/migrations/00000000000000_consolidated_schema.sql:998:revoke all on function public.delete_service_offering(uuid, uuid) from public, anon;
+src/db/migrations/00000000000000_consolidated_schema.sql:1022:revoke all on function public.link_company_to_service_offering(uuid, uuid, uuid) from public, anon;
+src/db/migrations/00000000000000_consolidated_schema.sql:1044:revoke all on function public.unlink_company_from_service_offering(uuid, uuid, uuid) from public, anon;
+src/db/migrations/00000000000000_consolidated_schema.sql:1073:revoke all on function public.create_company_role(uuid, uuid, text) from public, anon;
+src/db/migrations/00000000000000_consolidated_schema.sql:1095:revoke all on function public.delete_company_role(uuid, uuid, uuid) from public, anon;
+src/db/migrations/00000000000000_consolidated_schema.sql:1129:revoke all on function public.add_company_user(uuid, uuid, uuid, uuid) from public, anon;
+src/db/migrations/00000000000000_consolidated_schema.sql:1152:revoke all on function public.remove_company_user(uuid, uuid, uuid) from public, anon;
+src/db/migrations/00000000000000_consolidated_schema.sql:1190:revoke all on function public.grant_company_permission(uuid, uuid, uuid) from public, anon;
+src/db/migrations/00000000000000_consolidated_schema.sql:1222:revoke all on function public.revoke_company_permission(uuid, uuid, uuid) from public, anon;
+src/db/migrations/00000000000000_consolidated_schema.sql:1310:revoke all on function public.acquire_edit_lock from public, anon;
+src/db/migrations/00000000000000_consolidated_schema.sql:1326:revoke all on function public.release_edit_lock from public, anon;
+✅ PASS
+> Executing: "grep -R \"select 1 from public.tenant_users\" -n src/db/migrations"
+src/db/migrations/00000000000000_consolidated_schema.sql:469:    select 1 from public.tenant_users 
+src/db/migrations/00000000000000_consolidated_schema.sql:554:    select 1 from public.tenant_users
+src/db/migrations/00000000000000_consolidated_schema.sql:1115:  if not exists (select 1 from public.tenant_users where tenant_id = p_tenant_id and user_id = p_user_id) then
+src/db/migrations/00000000000000_consolidated_schema.sql:1246:            select 1 from public.tenant_users
+src/db/migrations/00000000000000_consolidated_schema.sql:1274:    if not exists (select 1 from public.tenant_users where tenant_id = p_tenant_id and user_id = v_user_id) then
+✅ PASS
+> Executing: "grep -R \"force row level security\" -n src/db/migrations"
+src/db/migrations/00000000000000_consolidated_schema.sql:45:alter table public.groups force row level security;
+src/db/migrations/00000000000000_consolidated_schema.sql:56:alter table public.group_members force row level security;
+src/db/migrations/00000000000000_consolidated_schema.sql:73:alter table public.organizations force row level security;
+src/db/migrations/00000000000000_consolidated_schema.sql:86:alter table public.companies force row level security;
+src/db/migrations/00000000000000_consolidated_schema.sql:98:alter table public.org_companies force row level security;
+src/db/migrations/00000000000000_consolidated_schema.sql:114:alter table public.projects force row level security;
+src/db/migrations/00000000000000_consolidated_schema.sql:127:alter table public.project_companies force row level security;
+src/db/migrations/00000000000000_consolidated_schema.sql:172:alter table public.service_offerings force row level security;
+src/db/migrations/00000000000000_consolidated_schema.sql:184:alter table public.service_offering_companies force row level security;
+src/db/migrations/00000000000000_consolidated_schema.sql:228:alter table public.company_roles force row level security;
+src/db/migrations/00000000000000_consolidated_schema.sql:241:alter table public.company_users force row level security;
+src/db/migrations/00000000000000_consolidated_schema.sql:250:alter table public.company_role_permissions force row level security;
+src/db/migrations/00000000000000_consolidated_schema.sql:1239:alter table public.edit_locks force row level security;
+src/db/migrations/20260217210000_user_preferences.sql:12:alter table public.user_preferences force row level security;
+✅ PASS
+> Executing: "! grep -r \"requiredRoles\" src/modules"
+✅ PASS
+> Executing: "! grep -R \"canAccessModule\" -n src/modules"
+✅ PASS
+> Executing: "! grep -r \"from '@/modules/\" src/modules"
+✅ PASS
+> Executing: "npm run build"
+
+> modular_monolith@1.0.0 build
+> next build
+
+▲ Next.js 16.1.6 (Turbopack)
+- Environments: .env.local
+
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+  Creating an optimized production build ...
+✓ Compiled successfully in 10.3s
+  Running TypeScript ...
+  Collecting page data using 3 workers ...
+  Generating static pages using 3 workers (0/7) ...
+Error: Dynamic server usage: Route /admin/menu couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at Object.getAll (.next/server/chunks/ssr/_b575bd72._.js:59:5524)
+    at c (.next/server/chunks/ssr/_b575bd72._.js:59:1322)
+    at Object.getItem (.next/server/chunks/ssr/_b575bd72._.js:59:2947)
+    at bA (.next/server/chunks/ssr/_b575bd72._.js:24:37875)
+    at cp._recoverAndRefresh (.next/server/chunks/ssr/_b575bd72._.js:37:23385)
+    at cp._initialize (.next/server/chunks/ssr/_b575bd72._.js:24:61926)
+    at <unknown> (.next/server/chunks/ssr/_b575bd72._.js:24:61836)
+    at <unknown> (.next/server/chunks/ssr/_b575bd72._.js:37:11275) {
+  description: "Route /admin/menu couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Error: Dynamic server usage: Route /admin/menu couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at Object.getAll (.next/server/chunks/ssr/_b575bd72._.js:59:5524)
+    at c (.next/server/chunks/ssr/_b575bd72._.js:59:1322)
+    at Object.getItem (.next/server/chunks/ssr/_b575bd72._.js:59:2947)
+    at bA (.next/server/chunks/ssr/_b575bd72._.js:24:37875)
+    at cp._recoverAndRefresh (.next/server/chunks/ssr/_b575bd72._.js:37:23385)
+    at cp._initialize (.next/server/chunks/ssr/_b575bd72._.js:24:61926)
+    at <unknown> (.next/server/chunks/ssr/_b575bd72._.js:24:61836)
+    at <unknown> (.next/server/chunks/ssr/_b575bd72._.js:37:11275) {
+  description: "Route /admin/menu couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+  Generating static pages using 3 workers (1/7) 
+[DIAG] Rendering DiagPage...
+[DIAG] URL: https://pvlazlvpnyfikrtytpcj.supabase.co, Has Key: true
+Error: Dynamic server usage: Route /diag couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at Object.getAll (.next/server/chunks/ssr/_b575bd72._.js:59:5524)
+    at c (.next/server/chunks/ssr/_b575bd72._.js:59:1322)
+    at Object.getItem (.next/server/chunks/ssr/_b575bd72._.js:59:2947)
+    at bA (.next/server/chunks/ssr/_b575bd72._.js:24:37875)
+    at cp._recoverAndRefresh (.next/server/chunks/ssr/_b575bd72._.js:37:23385)
+    at cp._initialize (.next/server/chunks/ssr/_b575bd72._.js:24:61926)
+    at <unknown> (.next/server/chunks/ssr/_b575bd72._.js:24:61836)
+    at <unknown> (.next/server/chunks/ssr/_b575bd72._.js:37:11275) {
+  description: "Route /diag couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+[DIAG] Supabase Exception: Error: Dynamic server usage: Route /diag couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at Object.getAll (.next/server/chunks/ssr/_b575bd72._.js:59:5524)
+    at c (.next/server/chunks/ssr/_b575bd72._.js:59:1322)
+    at Object.getItem (.next/server/chunks/ssr/_b575bd72._.js:59:2947)
+    at bA (.next/server/chunks/ssr/_b575bd72._.js:24:37875)
+    at cp.__loadSession (.next/server/chunks/ssr/_b575bd72._.js:37:11980)
+    at cp._useSession (.next/server/chunks/ssr/_b575bd72._.js:37:11717)
+    at cp._getUser (.next/server/chunks/ssr/_b575bd72._.js:37:14070)
+    at <unknown> (.next/server/chunks/ssr/_b575bd72._.js:37:13864) {
+  description: "Route /diag couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+  Generating static pages using 3 workers (3/7) 
+  Generating static pages using 3 workers (5/7) 
+✓ Generating static pages using 3 workers (7/7) in 63.9ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /admin/[[...slug]]
+├ ƒ /admin/menu
+├ ƒ /admin/t/[tenantSlug]/[[...slug]]
+├ ƒ /admin/t/[tenantSlug]/2fa
+├ ƒ /diag
+├ ○ /diag-simple
+└ ƒ /login
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+✅ PASS
+> Executing: "! grep -R \"from(['\\\"]companies['\\\"])\" src | grep -E \"insert|update|delete\""
+src/scripts/seed_section_editor_test.ts:        const { data: newCompany, error } = await supabase.from('companies').insert({
+❌ FAIL: Command failed: ! grep -R "from(['\"]companies['\"])" src | grep -E "insert|update|delete"
+DEBUG: Failed at command execution
+> Executing: "! grep -R \"from(['\\\"]organizations['\\\"])\" src | grep -E \"insert|update|delete\""
+src/scripts/seed_section_editor_test.ts:        const { data: newOrg, error } = await supabase.from('organizations').insert({
+❌ FAIL: Command failed: ! grep -R "from(['\"]organizations['\"])" src | grep -E "insert|update|delete"
+DEBUG: Failed at command execution
+> Executing: "! grep -R \"from(['\\\"]projects['\\\"])\" src | grep -E \"insert|update|delete\""
+✅ PASS
+> Executing: "! grep -R \"from(['\\\"]service_offerings['\\\"])\" src | grep -E \"insert|update|delete\""
+✅ PASS
+> Executing: "grep -R \"create or replace function public.create_group\" src/db/migrations"
+src/db/migrations/00000000000000_consolidated_schema.sql:create or replace function public.create_group(p_tenant_id uuid, p_name text) returns uuid
+✅ PASS
+> Executing: "grep -R \"create or replace function public.create_organization\" src/db/migrations"
+src/db/migrations/00000000000000_consolidated_schema.sql:create or replace function public.create_organization(p_tenant_id uuid, p_name text, p_owner_group_id uuid) returns uuid
+✅ PASS
+> Executing: "grep -R \"create or replace function public.create_company\" src/db/migrations"
+src/db/migrations/00000000000000_consolidated_schema.sql:create or replace function public.create_company(p_tenant_id uuid, p_name text) returns uuid
+src/db/migrations/00000000000000_consolidated_schema.sql:create or replace function public.create_company_role(p_tenant_id uuid, p_company_id uuid, p_name text) returns uuid
+✅ PASS
+> Executing: "grep -R \"force row level security\" src/db/migrations | grep -E \"companies|organizations|projects|service_offerings\""
+src/db/migrations/00000000000000_consolidated_schema.sql:alter table public.organizations force row level security;
+src/db/migrations/00000000000000_consolidated_schema.sql:alter table public.companies force row level security;
+src/db/migrations/00000000000000_consolidated_schema.sql:alter table public.org_companies force row level security;
+src/db/migrations/00000000000000_consolidated_schema.sql:alter table public.projects force row level security;
+src/db/migrations/00000000000000_consolidated_schema.sql:alter table public.project_companies force row level security;
+src/db/migrations/00000000000000_consolidated_schema.sql:alter table public.service_offerings force row level security;
+src/db/migrations/00000000000000_consolidated_schema.sql:alter table public.service_offering_companies force row level security;
+✅ PASS
+> Executing: "grep \"bufferToHex\" src/core/security/twofaCookie.ts"
+function bufferToHex(buffer: ArrayBuffer): string {
+    const signatureHex = bufferToHex(signatureBuffer);
+✅ PASS
+> Executing: "grep \"crypto.subtle.verify\" src/core/security/twofaCookie.ts"
+        const isValid = await crypto.subtle.verify(
+✅ PASS
+> Executing: "! grep \"Buffer.from\" src/core/security/twofaCookie.ts"
+✅ PASS
+> Executing: "grep \"tenantId: string;\" src/core/security/twofaCookie.ts"
+    tenantId: string;
+✅ PASS
+> Executing: "grep \"requireTwoFaVerified\" src/app/\\(admin\\)/admin/t/\\[tenantSlug\\]/\\[\\[...slug\\]\\]/page.tsx"
+grep: src/app/(admin)/admin/t/[tenantSlug]/[[...slug]]/page.tsx: No such file or directory
+❌ FAIL: Command failed: grep "requireTwoFaVerified" src/app/\(admin\)/admin/t/\[tenantSlug\]/\[\[...slug\]\]/page.tsx
+DEBUG: Failed at command execution
+> Executing: "grep \"verifyTwoFaCookie\" src/middleware.ts"
+import { verifyTwoFaCookie } from '@/core/security/twofaCookie';
+                    const payload = await verifyTwoFaCookie(twoFaCookie.value);
+✅ PASS
+> Executing: "[ ! -d src/app/2fa ] && echo \"PASS: No global 2fa route\""
+PASS: No global 2fa route
+✅ PASS
+> Executing: "grep -ir \"create or replace function public.validate_twofa_session\" src/db/migrations"
+src/db/migrations/00000000000000_consolidated_schema.sql:CREATE OR REPLACE FUNCTION public.validate_twofa_session(p_tenant_id uuid, p_session_id uuid)
+✅ PASS
+> Executing: "grep -ir \"set search_path = public, extensions, auth\" src/db/migrations"
+src/db/migrations/00000000000000_consolidated_schema.sql:set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:language plpgsql security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:language plpgsql security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:LANGUAGE plpgsql security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:LANGUAGE plpgsql security definer set search_path = public, extensions, auth
+src/db/migrations/00000000000000_consolidated_schema.sql:LANGUAGE plpgsql security definer set search_path = public, extensions, auth
+✅ PASS
+> Executing: "./src/scripts/verify_i18n_strictness.sh"
+🔍 Verifying Strict I18n Architecture...
+✅ PARANOID AUDIT PASSED: I18n is strict.
+✅ PASS
+> Executing: "! grep -r \"from '@/shared/i18n'\" src/core"
+✅ PASS
+DEBUG: Failed after 09 verification
+
+📄 Auditing 10_SECURITY_MODEL.md file references...
+✅ PASS: File exists: src/middleware.ts
+✅ PASS: File exists: src/app/
+✅ PASS: File exists: src/core/security/serverGuard.ts
+✅ PASS: File exists: src/core/security/twofaCookie.ts
+✅ PASS: File exists: src/core
+DEBUG: Failed after 10 verification
+
+📄 Auditing 08_FAILURE_MODES.md redirect reasons...
+✅ PASS: Code contains redirect reason: reason=missing_cookie
+✅ PASS: Code contains redirect reason: reason=invalid_signature
+✅ PASS: Code contains redirect reason: reason=tenant_mismatch
+✅ PASS: Code contains redirect reason: reason=session_revoked
+
+🚫 DOCUMENTATION AUDIT FAILED: Discrepancies found.

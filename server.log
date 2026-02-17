@@ -1,0 +1,141 @@
+
+> modular_monolith@1.0.0 dev
+> next dev
+
+▲ Next.js 16.1.6 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://169.254.169.254:3000
+- Environments: .env.local
+
+✓ Starting...
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+✓ Ready in 856ms
+ GET /login?error=No%20active%20tenants%20found%20for%20this%20user. 200 in 534ms (compile: 397ms, render: 137ms)
+ GET /login 200 in 83ms (compile: 25ms, render: 58ms)
+ GET /login?error=No+active+tenants+found+for+this+user. 200 in 21ms (compile: 2ms, render: 18ms)
+ POST /login 303 in 1250ms (compile: 9ms, render: 1240ms)
+ GET /login 200 in 251ms (compile: 84ms, render: 167ms)
+ GET /admin/select-tenant 200 in 1343ms (compile: 1073ms, proxy.ts: 8ms, render: 262ms)
+ POST /login 303 in 2.3s (compile: 12ms, render: 2.2s)
+ GET /login 200 in 28ms (compile: 5ms, render: 23ms)
+ POST /admin/select-tenant 303 in 1409ms (compile: 59ms, proxy.ts: 61ms, render: 1289ms)
+ GET /admin/select-tenant 200 in 234ms (compile: 8ms, proxy.ts: 5ms, render: 222ms)
+ POST /login 303 in 1219ms (compile: 9ms, render: 1210ms)
+ GET /login 200 in 23ms (compile: 2ms, render: 21ms)
+ POST /admin/select-tenant 303 in 120ms (compile: 4ms, proxy.ts: 2ms, render: 114ms)
+ GET /admin/select-tenant 200 in 290ms (compile: 12ms, proxy.ts: 7ms, render: 271ms)
+ POST /login 303 in 1281ms (compile: 41ms, render: 1240ms)
+  Reload env: .env.local
+ GET /login?error=No+active+tenants+found+for+this+user. 200 in 403ms (compile: 241ms, render: 162ms)
+ GET /login?error=No+active+tenants+found+for+this+user. 200 in 17ms (compile: 2ms, render: 14ms)
+ GET /admin/select-tenant 200 in 464ms (compile: 179ms, proxy.ts: 56ms, render: 229ms)
+ GET /login 200 in 30ms (compile: 4ms, render: 26ms)
+ POST /admin/select-tenant 303 in 681ms (compile: 31ms, proxy.ts: 46ms, render: 604ms)
+Error fetching tenant modules: {
+  code: '42P17',
+  details: null,
+  hint: null,
+  message: 'infinite recursion detected in policy for relation "tenant_users"'
+}
+ GET /admin/t/test-tenant/2fa 200 in 2.4s (compile: 1549ms, proxy.ts: 1460µs, render: 881ms)
+ POST /login 303 in 3.4s (compile: 4ms, render: 3.4s)
+ GET /login 200 in 24ms (compile: 9ms, render: 14ms)
+ GET /login 200 in 2.1s (compile: 173ms, render: 1880ms)
+ GET /admin/t/test-tenant/2fa 200 in 759ms (compile: 108ms, proxy.ts: 8ms, render: 644ms)
+ POST /login 303 in 1943ms (compile: 28ms, render: 1915ms)
+ GET /admin/t/test-tenant/2fa 200 in 61ms (compile: 31ms, proxy.ts: 3ms, render: 27ms)
+ GET /admin/t/test-tenant/2fa 200 in 23ms (compile: 12ms, proxy.ts: 2ms, render: 9ms)
+ GET /admin/t/test-tenant/2fa 200 in 20ms (compile: 9ms, proxy.ts: 1299µs, render: 10ms)
+ GET /admin/t/test-tenant/2fa 200 in 24ms (compile: 11ms, proxy.ts: 1819µs, render: 11ms)
+✓ Compiled in 3.5s
+ GET /admin/t/test-tenant/2fa 200 in 4.0s (compile: 518ms, proxy.ts: 437ms, render: 3.1s)
+ GET /admin/t/test-tenant/2fa 200 in 1793ms (compile: 329ms, proxy.ts: 195ms, render: 1270ms)
+ GET /admin/t/test-tenant/2fa 200 in 970ms (compile: 47ms, proxy.ts: 506ms, render: 418ms)
+ GET /admin/t/test-tenant/2fa 200 in 279ms (compile: 21ms, proxy.ts: 3ms, render: 255ms)
+ GET /admin/t/test-tenant/2fa 200 in 819ms (compile: 55ms, proxy.ts: 91ms, render: 673ms)
+ GET /admin/t/test-tenant/2fa 200 in 751ms (compile: 70ms, proxy.ts: 30ms, render: 651ms)
+ GET /admin/t/test-tenant/2fa 200 in 620ms (compile: 143ms, proxy.ts: 26ms, render: 451ms)
+ GET /admin/t/test-tenant/2fa 200 in 879ms (compile: 52ms, proxy.ts: 26ms, render: 801ms)
+ GET /admin/t/test-tenant/2fa 200 in 829ms (compile: 91ms, proxy.ts: 49ms, render: 689ms)
+ GET /admin/t/test-tenant/2fa 200 in 470ms (compile: 49ms, proxy.ts: 33ms, render: 388ms)
+ GET /admin/t/test-tenant/2fa 200 in 322ms (compile: 52ms, proxy.ts: 14ms, render: 256ms)
+ GET /admin/t/test-tenant/2fa 200 in 307ms (compile: 50ms, proxy.ts: 16ms, render: 241ms)
+ GET /admin/t/test-tenant/2fa 200 in 296ms (compile: 22ms, proxy.ts: 13ms, render: 262ms)
+ GET /admin/t/test-tenant/2fa 200 in 262ms (compile: 25ms, proxy.ts: 8ms, render: 229ms)
+ GET /admin/t/test-tenant/2fa 200 in 374ms (compile: 41ms, proxy.ts: 13ms, render: 320ms)
+ GET /admin/t/test-tenant/2fa 200 in 258ms (compile: 19ms, proxy.ts: 14ms, render: 224ms)
+ GET /admin/t/test-tenant/2fa 200 in 217ms (compile: 8ms, proxy.ts: 8ms, render: 201ms)
+ GET /admin/t/test-tenant/2fa 200 in 220ms (compile: 54ms, proxy.ts: 9ms, render: 158ms)
+✓ Compiled in 3.3s
+ GET /admin/t/test-tenant/2fa 200 in 3.7s (compile: 1526ms, proxy.ts: 239ms, render: 1952ms)
+ GET /admin/t/test-tenant/2fa 200 in 1627ms (compile: 149ms, proxy.ts: 10ms, render: 1467ms)
+✓ Compiled in 1225ms
+⨯ Error: Missing API key. Pass it to the constructor `new Resend("re_123")`
+    at module evaluation (src/infra/email/ResendEmailService.ts:6:16)
+    at module evaluation (src/app/(admin)/admin/t/[tenantSlug]/2fa/actions.ts:8:1)
+    at module evaluation (.next-internal/server/app/(admin)/admin/t/[tenantSlug]/2fa/page/actions.js (server actions loader):2:1)
+    at module evaluation (.next/dev/server/chunks/ssr/[root-of-the-server]__064a2961._.js:266:595)
+  4 |
+  5 | // Ensure RESEND_API_KEY is available in environment
+> 6 | const resend = new Resend(process.env.RESEND_API_KEY);
+    |                ^
+  7 |
+  8 | export class ResendEmailService implements IEmailService {
+  9 |     async sendLoginChallenge(toEmail: string, tenantSlug: string, code: string): Promise<void> { {
+  digest: '2924997875'
+}
+ POST /admin/t/test-tenant/2fa 500 in 3.0s (compile: 114ms, proxy.ts: 24ms, render: 2.8s)
+ GET /admin/t/test-tenant/2fa 200 in 1865ms (compile: 76ms, proxy.ts: 52ms, render: 1737ms)
+⨯ Error: Missing API key. Pass it to the constructor `new Resend("re_123")`
+    at module evaluation (src/infra/email/ResendEmailService.ts:6:16)
+    at module evaluation (src/app/(admin)/admin/t/[tenantSlug]/2fa/actions.ts:8:1)
+    at module evaluation (.next-internal/server/app/(admin)/admin/t/[tenantSlug]/2fa/page/actions.js (server actions loader):2:1)
+    at module evaluation (.next/dev/server/chunks/ssr/[root-of-the-server]__064a2961._.js:266:595)
+  4 |
+  5 | // Ensure RESEND_API_KEY is available in environment
+> 6 | const resend = new Resend(process.env.RESEND_API_KEY);
+    |                ^
+  7 |
+  8 | export class ResendEmailService implements IEmailService {
+  9 |     async sendLoginChallenge(toEmail: string, tenantSlug: string, code: string): Promise<void> { {
+  digest: '2924997875'
+}
+ POST /admin/t/test-tenant/2fa 500 in 400ms (compile: 36ms, proxy.ts: 29ms, render: 336ms)
+ GET /admin 307 in 663ms (compile: 68ms, proxy.ts: 2ms, render: 592ms)
+ GET /admin/t/test-tenant/2fa 200 in 582ms (compile: 7ms, proxy.ts: 995µs, render: 574ms)
+⨯ Error: Missing API key. Pass it to the constructor `new Resend("re_123")`
+    at module evaluation (src/infra/email/ResendEmailService.ts:6:16)
+    at module evaluation (src/app/(admin)/admin/t/[tenantSlug]/2fa/actions.ts:8:1)
+    at module evaluation (.next-internal/server/app/(admin)/admin/t/[tenantSlug]/2fa/page/actions.js (server actions loader):2:1)
+    at module evaluation (.next/dev/server/chunks/ssr/[root-of-the-server]__064a2961._.js:266:595)
+  4 |
+  5 | // Ensure RESEND_API_KEY is available in environment
+> 6 | const resend = new Resend(process.env.RESEND_API_KEY);
+    |                ^
+  7 |
+  8 | export class ResendEmailService implements IEmailService {
+  9 |     async sendLoginChallenge(toEmail: string, tenantSlug: string, code: string): Promise<void> { {
+  digest: '2924997875'
+}
+ POST /admin/t/test-tenant/2fa 500 in 400ms (compile: 14ms, proxy.ts: 6ms, render: 380ms)
+ GET / 200 in 410ms (compile: 280ms, render: 130ms)
+ GET /admin 307 in 621ms (compile: 15ms, proxy.ts: 8ms, render: 598ms)
+ GET /admin/t/test-tenant/2fa 200 in 535ms (compile: 7ms, proxy.ts: 1007µs, render: 527ms)
+⨯ Error: Missing API key. Pass it to the constructor `new Resend("re_123")`
+    at module evaluation (src/infra/email/ResendEmailService.ts:6:16)
+    at module evaluation (src/app/(admin)/admin/t/[tenantSlug]/2fa/actions.ts:8:1)
+    at module evaluation (.next-internal/server/app/(admin)/admin/t/[tenantSlug]/2fa/page/actions.js (server actions loader):2:1)
+    at module evaluation (.next/dev/server/chunks/ssr/[root-of-the-server]__064a2961._.js:266:595)
+  4 |
+  5 | // Ensure RESEND_API_KEY is available in environment
+> 6 | const resend = new Resend(process.env.RESEND_API_KEY);
+    |                ^
+  7 |
+  8 | export class ResendEmailService implements IEmailService {
+  9 |     async sendLoginChallenge(toEmail: string, tenantSlug: string, code: string): Promise<void> { {
+  digest: '2924997875'
+}
+ POST /admin/t/test-tenant/2fa 500 in 298ms (compile: 26ms, proxy.ts: 9ms, render: 262ms)
+ GET /admin/t/test-tenant/2fa 200 in 522ms (compile: 7ms, proxy.ts: 1861µs, render: 514ms)
+ GET /admin/t/test-tenant/2fa 200 in 420ms (compile: 9ms, proxy.ts: 3ms, render: 408ms)
+ GET /admin/t/test-tenant/2fa 200 in 425ms (compile: 9ms, proxy.ts: 2ms, render: 413ms)

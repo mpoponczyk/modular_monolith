@@ -11,7 +11,7 @@ import { signTwoFaCookie } from '@/core/security/twofaCookie';
 // Helper to get infra service (Dependency Injection style)
 const emailService = new ResendEmailService();
 
-export async function requestChallenge(tenantSlug: string) {
+export async function requestChallenge(tenantSlug: string, locale: string = 'en') {
     const auth = await resolveAuthContext(tenantSlug);
     if (!auth) redirect('/login');
 
@@ -33,7 +33,7 @@ export async function requestChallenge(tenantSlug: string) {
 
     // Send Email via Infra
     if (user.email && code) {
-        await emailService.sendLoginChallenge(user.email, tenantSlug, code as string);
+        await emailService.sendLoginChallenge(user.email, tenantSlug, code as string, locale);
     }
 }
 
@@ -83,6 +83,6 @@ export async function verifyChallenge(tenantSlug: string, code: string) {
         maxAge: 12 * 60 * 60 // 12 hours
     });
 
-    // Redirect to Admin Dashboard (or previous via query param if implemented)
-    redirect(`/admin/t/${tenantSlug}`);
+    // Return success and redirect URL allow client content to handle navigation
+    return { success: true, redirectUrl: `/admin/t/${tenantSlug}` };
 }

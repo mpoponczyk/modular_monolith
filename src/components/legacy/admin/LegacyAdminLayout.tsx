@@ -5,6 +5,8 @@ import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { LogOut, LayoutGrid } from "lucide-react"
 import { Button } from "@/components/legacy/ui/button"
+import { UserDropdown } from "@/components/ui/UserDropdown"
+import LanguageSwitcher from "@/components/legacy/admin/LanguageSwitcher"
 
 export interface SidebarItem {
     id: string;
@@ -23,6 +25,7 @@ interface LegacyAdminLayoutProps {
         full_name?: string;
     };
     onLogout: () => Promise<void>;
+    initialTheme: string;
 }
 
 export function LegacyAdminLayout({
@@ -30,7 +33,8 @@ export function LegacyAdminLayout({
     sidebarItems,
     tenantSlug,
     user,
-    onLogout
+    onLogout,
+    initialTheme
 }: LegacyAdminLayoutProps) {
     const pathname = usePathname();
 
@@ -42,7 +46,7 @@ export function LegacyAdminLayout({
                 <div className="h-16 flex items-center px-6 border-b border-blue-900/50 dark:border-zinc-800 bg-blue-950/50 backdrop-blur-sm">
                     <div className="flex items-center gap-3 font-bold text-lg tracking-tight">
                         <LayoutGrid className="text-blue-400" size={24} />
-                        <span>FerryAdmin</span>
+                        <span>modMonolith</span>
                     </div>
                 </div>
 
@@ -77,27 +81,15 @@ export function LegacyAdminLayout({
 
                 {/* User Footer */}
                 <div className="p-4 border-t border-blue-900/50 dark:border-zinc-800 bg-blue-950/30">
-                    <div className="flex items-center gap-3 mb-4 px-2">
-                        <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-xs font-bold ring-2 ring-blue-500/30">
-                            {user.email?.substring(0, 2).toUpperCase() || 'US'}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-white truncate">
-                                {user.full_name || user.email?.split('@')[0]}
-                            </p>
-                            <p className="text-xs text-blue-300 truncate opacity-70">
-                                {tenantSlug}
-                            </p>
+                    <div className="flex flex-col gap-4">
+                        <div className="flex items-center justify-between">
+                            <UserDropdown
+                                email={user.email || 'User'}
+                                initialTheme={initialTheme}
+                            />
+                            <LanguageSwitcher />
                         </div>
                     </div>
-                    <Button
-                        variant="ghost"
-                        className="w-full justify-start text-blue-200 hover:text-white hover:bg-blue-900/50"
-                        onClick={() => onLogout()}
-                    >
-                        <LogOut size={16} className="mr-2" />
-                        Sign Out
-                    </Button>
                 </div>
             </aside>
 

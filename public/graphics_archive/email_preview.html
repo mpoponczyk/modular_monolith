@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Banner Preview</title>
+    <style>
+        body {
+            background-color: #f4f4f4;
+            font-family: sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            /* mimicking some clients */
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            width: 100%;
+            /* Force 4:1 aspect ratio visualization if image loads */
+            min-height: 150px;
+            background-color: #eee;
+        }
+
+        .header img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .content {
+            padding: 30px;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        h1 {
+            color: #1F2C38;
+            margin-top: 0;
+        }
+
+        .verification-info {
+            text-align: center;
+            font-size: 12px;
+            color: #888;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="email-container">
+        <!-- Banner Section -->
+        <div class="header">
+            <img src="./email_banner_procedural.png" alt="Email Header Banner">
+        </div>
+
+        <!-- Simulated Body Content -->
+        <div class="content">
+            <h1>Welcome to Modular Monolith</h1>
+            <p>Hello User,</p>
+            <p>This is a preview of how the new navigation banner looks in a typical email client container (approx
+                600px width).</p>
+            <p>The banner above should be crisp, 4:1 aspect ratio, and blending seamlessly into its background.</p>
+            <p>Best regards,<br>The Team</p>
+        </div>
+    </div>
+
+    <div class="verification-info">
+        Previewing: public/graphics_archive/email_banner_v4.png
+    </div>
+
+</body>
+
+</html>

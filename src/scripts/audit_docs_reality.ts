@@ -28,7 +28,7 @@ async function audit() {
                 for (const cmd of cmdLines) {
                     if (cmd.trim()) {
                         try {
-                            console.log(`> Executing: ${cmd}`);
+                            console.log(`> Executing: ${JSON.stringify(cmd)}`);
                             execSync(cmd, { stdio: 'inherit', cwd: process.cwd() });
                             console.log('✅ PASS');
                         } catch (e) {

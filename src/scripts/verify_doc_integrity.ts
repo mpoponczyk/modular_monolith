@@ -1,9 +1,9 @@
 import fs from 'fs';
 import path from 'path';
 
-const RELEASE_VERSION = 'v0.0.1-prealpha.1';
+const RELEASE_VERSION = 'v0.0.2-prealfa';
 const DOCS_DIR = path.join(process.cwd(), 'docs/architecture');
-const DOC_FILE = path.join(process.cwd(), `docs/Modular_Monolith_Architecture_${RELEASE_VERSION}.doc`);
+const DOC_FILE = path.join(process.cwd(), `docs/Modular_monolith_architecture_${RELEASE_VERSION}.doc`);
 
 function unescapeHtml(text: string): string {
     return text

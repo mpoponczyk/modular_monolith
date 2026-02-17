@@ -1,24 +1,48 @@
-"use client"
-
 import Link from "next/link"
-import { LayoutGrid } from "lucide-react"
+import { LayoutGrid, LogOut } from "lucide-react"
 import LanguageSwitcher from "./LanguageSwitcher"
+import { UserDropdown } from "@/components/ui/UserDropdown"
+import { signOutAction } from "@/app/actions";
 
-export function LegacyHeader() {
+interface LegacyHeaderProps {
+    user: {
+        email?: string;
+        id?: string;
+    } | null;
+    initialTheme: string;
+}
+
+export function LegacyHeader({ user, initialTheme }: LegacyHeaderProps) {
     return (
-        <header className="h-12 bg-[#172554] border-b border-blue-900/50 text-white flex items-center px-4 shadow-md z-50 sticky top-0 font-sans transition-colors duration-300">
+        <header className="h-12 bg-sidebar border-b border-sidebar-border text-sidebar-foreground flex items-center px-4 shadow-md z-50 sticky top-0 font-sans transition-colors duration-300">
             <div className="flex items-center gap-2">
                 <Link
-                    href="/login"
-                    className="flex items-center gap-2 font-bold text-lg hover:text-blue-200 transition-colors"
+                    href="/"
+                    className="flex items-center gap-2 font-bold text-lg hover:text-sidebar-primary transition-colors"
                 >
                     <LayoutGrid size={20} />
-                    mod-Monolith
+                    modMonolith
                 </Link>
             </div>
 
             <nav className="ml-auto flex items-center gap-4">
                 <LanguageSwitcher />
+                {user && (
+                    <>
+                        <UserDropdown
+                            email={user.email || 'User'}
+                            initialTheme={initialTheme}
+                        />
+                        <form action={signOutAction}>
+                            <button
+                                className="flex items-center justify-center p-2 text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent rounded-md transition-colors"
+                                title="Sign Out"
+                            >
+                                <LogOut size={20} />
+                            </button>
+                        </form>
+                    </>
+                )}
             </nav>
         </header>
     )

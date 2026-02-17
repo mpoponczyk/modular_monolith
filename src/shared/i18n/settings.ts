@@ -1,5 +1,5 @@
 export const FALLBACK_LOCALE = 'en';
-export const SUPPORTED_LOCALES = ['en', 'pl', 'de', 'ua'] as const;
+export const SUPPORTED_LOCALES = ['en', 'pl'] as const;
 export const LOCALE_COOKIE_NAME = 'NEXT_LOCALE';
 export const DEFAULT_NS = 'common';
 

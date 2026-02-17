@@ -19,5 +19,6 @@ export function canAccessModule(module: ModuleDefinition, context: UserContext):
     }
 
     // 3. Check overlap between user permissions and required permissions
-    return module.permissions.requiredPermissions.some(permission => context.permissions.includes(permission));
+    // STRICT: AND logic enforced (User must have ALL required permissions)
+    return module.permissions.requiredPermissions.every(permission => context.permissions.includes(permission));
 }
