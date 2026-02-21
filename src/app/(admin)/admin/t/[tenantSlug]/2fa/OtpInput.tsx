@@ -110,7 +110,7 @@ export default function OtpInput({ length = 6, value, onChange, disabled }: OtpI
                     onKeyDown={(e) => handleKeyDown(e, idx)}
                     onPaste={handlePaste}
                     disabled={disabled}
-                    className="w-12 h-14 text-center text-2xl font-bold p-0 shadow-sm focus:ring-2 focus:ring-blue-500 transition-all border-slate-200"
+                    className="w-12 h-14 text-center text-2xl font-bold p-0 shadow-sm focus:ring-2 focus:ring-blue-500 transition-all border-slate-200 !text-black text-opacity-100 dark:text-white"
                     autoComplete="one-time-code"
                 />
             ))}

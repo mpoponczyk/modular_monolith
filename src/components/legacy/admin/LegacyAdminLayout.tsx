@@ -26,6 +26,7 @@ interface LegacyAdminLayoutProps {
     };
     onLogout: () => Promise<void>;
     initialTheme: string;
+    initialLocale: string;
 }
 
 export function LegacyAdminLayout({
@@ -34,7 +35,8 @@ export function LegacyAdminLayout({
     tenantSlug,
     user,
     onLogout,
-    initialTheme
+    initialTheme,
+    initialLocale
 }: LegacyAdminLayoutProps) {
     const pathname = usePathname();
 
@@ -84,10 +86,10 @@ export function LegacyAdminLayout({
                     <div className="flex flex-col gap-4">
                         <div className="flex items-center justify-between">
                             <UserDropdown
-                                email={user.email || 'User'}
+                                user={user}
                                 initialTheme={initialTheme}
                             />
-                            <LanguageSwitcher />
+                            <LanguageSwitcher initialLocale={initialLocale} />
                         </div>
                     </div>
                 </div>

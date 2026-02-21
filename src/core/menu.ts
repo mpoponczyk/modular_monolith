@@ -13,18 +13,22 @@ export interface MenuItem {
 }
 
 export function getMenuItems(tenantContext: TenantContext, userContext: UserContext): MenuItem[] {
+    const start = performance.now();
     const modules = moduleRegistry.getModules();
 
-    return modules
+    const items = modules
         .filter(m => isModuleActive(m, tenantContext))
         .filter(m => canAccessModule(m, userContext))
         .filter(m => m.layout.showInMenu)
         .map(m => ({
             id: m.id,
             name: m.name,
-            path: `/admin/${m.id}`,
+            path: `/admin/t/${tenantContext.slug}/${m.id}`,
             order: m.layout.order,
             group: m.layout.menuGroup,
         }))
         .sort((a, b) => a.order - b.order);
+
+    console.log(`[Perf] getMenuItems (Static): ${(performance.now() - start).toFixed(2)}ms`);
+    return items;
 }

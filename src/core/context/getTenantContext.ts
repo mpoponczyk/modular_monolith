@@ -1,25 +1,26 @@
 // mateusz poponczyk
-import { User } from '@supabase/supabase-js';
-import { Tenant, TenantContext } from '@/core/types';
+import { TenantContext } from '@/core/types';
 import { SupabaseTenantRepository } from '@/infra/repositories/SupabaseTenantRepository';
 
-export async function getTenantContext(user: User, tenant: Tenant): Promise<TenantContext | null> {
-    if (!user || !tenant) {
+import { cache } from 'react';
+
+export const getTenantContext = cache(async (tenantId: string, tenantSlug: string): Promise<TenantContext | null> => {
+    if (!tenantId || !tenantSlug) {
         return null;
     }
 
     const tenantRepo = new SupabaseTenantRepository();
 
     try {
-        const activeModuleIds = await tenantRepo.getTenantModules(tenant.id);
+        const activeModuleIds = await tenantRepo.getTenantModules(tenantId);
 
         return {
-            tenantId: tenant.id,
-            slug: tenant.slug,
+            tenantId: tenantId,
+            slug: tenantSlug,
             activeModuleIds
         };
     } catch (error) {
         console.error("Failed to resolve tenant context", error);
         return null;
     }
-}
+});

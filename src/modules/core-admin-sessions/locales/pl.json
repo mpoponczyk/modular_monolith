@@ -1,0 +1,30 @@
+{
+    "name": "Aktywne Sesje",
+    "description": "Przeglądaj i unieważniaj sprzętowe klucze sesji zabezpieczeń 2FA.",
+    "sessions": {
+        "headers": {
+            "admin": "Administrator",
+            "device": "Urządzenie",
+            "type": "Typ",
+            "status": "Status",
+            "activity": "Aktywność",
+            "actions": "Akcje"
+        },
+        "badges": {
+            "you": "Ty",
+            "trusted": "Zaufane",
+            "temporary": "Tymczasowa",
+            "online": "Online",
+            "offline": "Offline"
+        },
+        "labels": {
+            "unknownDevice": "Nieznane urządzenie",
+            "timeLog": "Log"
+        },
+        "actions": {
+            "logout": "Wyloguj",
+            "confirmLogout": "Czy na pewno chcesz zamknąć tę sesję? Administrator będzie musiał zalogować się ponownie."
+        },
+        "empty": "Brak aktywnych sesji do wyświetlenia."
+    }
+}

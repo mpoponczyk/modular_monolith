@@ -1,0 +1,479 @@
+
+> modular_monolith@1.0.0 start
+> next start
+
+▲ Next.js 16.1.6
+- Local:         http://localhost:3000
+- Network:       http://169.254.169.254:3000
+
+✓ Starting...
+✓ Ready in 1865ms
+[Perf] Middleware Verify 2FA: 8.46ms
+[server-auth] Cookies details:
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 3155
+ - 2fa_session: length 347
+[server-auth] Cookies details:
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 3155
+ - 2fa_session: length 347
+[server-auth] Cookies details:
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 3155
+ - 2fa_session: length 347
+[server-auth] Cookies details:
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 3155
+ - 2fa_session: length 347
+[server-auth] Cookies details:
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 3155
+ - 2fa_session: length 347
+[server-auth] Cookies details:
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 3155
+ - 2fa_session: length 347
+[server-auth] Cookies details:
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 3155
+ - 2fa_session: length 347
+[server-auth] Cookies details:
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 3155
+ - 2fa_session: length 347
+[server-auth] Cookies details:
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 3155
+ - 2fa_session: length 347
+[server-auth] Cookies details:
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 3155
+ - 2fa_session: length 347
+[server-auth] Cookies details:
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 3155
+ - 2fa_session: length 347
+[server-auth] Cookies details:
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 3155
+ - 2fa_session: length 347
+[server-auth] Cookies details:
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 3155
+ - 2fa_session: length 347
+[server-auth] Cookies details:
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 3155
+ - 2fa_session: length 347
+[server-auth] Cookies details:
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 3155
+ - 2fa_session: length 347
+[server-auth] Cookies details:
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 3155
+ - 2fa_session: length 347
+[Perf] resolveAuthContext (Contexts primitive cache): 174.26ms
+[Perf] resolveAuthContext (Total): 563.62ms
+[Perf] resolveAuthContext (Contexts primitive cache): 173.76ms
+[Perf] resolveAuthContext (Total): 312.69ms
+[Perf] TenantLayout resolveAuthContext: 563.74ms
+[Perf] AdminLayout resolveAuthContext: 316.76ms
+[server-auth] Cookies details:
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 3155
+ - 2fa_session: length 347
+[server-auth] Cookies details:
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 3155
+ - 2fa_session: length 347
+[server-auth] Cookies details:
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 3155
+ - 2fa_session: length 347
+[server-auth] Cookies details:
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 3155
+ - 2fa_session: length 347
+[server-auth] Cookies details:
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 3155
+ - 2fa_session: length 347
+[server-auth] Cookies details:
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 3155
+ - 2fa_session: length 347
+[server-auth] Cookies details:
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 3155
+ - 2fa_session: length 347
+[server-auth] Cookies details:
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 3155
+ - 2fa_session: length 347
+[Perf] Middleware Verify 2FA: 15.07ms
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[Perf] Middleware Verify 2FA: 0.21ms
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[Perf] resolveAuthContext (Contexts primitive cache): 267.42ms
+[Perf] resolveAuthContext (Total): 1010.34ms
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[Perf] resolveAuthContext (Contexts primitive cache): 362.21ms
+[Perf] resolveAuthContext (Total): 998.97ms
+[Perf] resolveAuthContext (Contexts primitive cache): 361.93ms
+[Perf] resolveAuthContext (Total): 611.86ms
+[Perf] TenantLayout resolveAuthContext: 999.01ms
+[Perf] AdminLayout resolveAuthContext: 612.83ms
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[Perf] Middleware Verify 2FA: 0.27ms
+[Perf] Middleware Verify 2FA: 0.14ms
+[Perf] Middleware Verify 2FA: 0.20ms
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[Perf] resolveAuthContext (Contexts primitive cache): 189.27ms
+[Perf] resolveAuthContext (Total): 559.50ms
+[Perf] resolveAuthContext (Contexts primitive cache): 189.03ms
+[Perf] resolveAuthContext (Total): 379.99ms
+[Perf] TenantLayout resolveAuthContext: 559.54ms
+[Perf] DashboardLayout 2FA Guard: 0.00ms
+[Perf] getMenuItems (Static): 0.28ms
+[Perf] DashboardLayout getMenuItems: 0.31ms
+[Perf] AdminLayout resolveAuthContext: 382.43ms
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[server-auth] Cookies details:
+ - 2fa_session: length 347
+ - theme: length 4
+ - sb-pvlazlvpnyfikrtytpcj-auth-token: length 2666
+[Perf] DashboardLayout getTheme: 233.46ms
+[Perf] DashboardLayout i18n: 0.12ms
+[Perf] Middleware Verify 2FA: 1.65ms
+[Perf] Middleware Verify 2FA: 2.40ms
+[Perf] Middleware Verify 2FA: 3.14ms
+[Perf] Middleware Verify 2FA: 1.55ms
+[Perf] Middleware Verify 2FA: 4.10ms
+[Perf] Middleware Verify 2FA: 5.51ms

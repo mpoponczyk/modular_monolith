@@ -13,10 +13,7 @@ export class SupabaseUserRepository implements IUserRepository {
         // Query: Tenant Users -> Roles -> Role Permissions -> Permissions
         // We enforce tenant_id check on tenant_users AND roles for paranoia.
         // Rule: .eq('tenant_id', tenantId) MUST be present.
-
-        // We'll query tenant_users to get the role, then join permissions.
-        // Actually, we can join deeply.
-        // tenant_users (filter by tenant_id, user_id) -> roles -> role_permissions -> permissions
+        // Correct Column: permissions(key) NOT permissions(name) based on 20260218180000_core_roles.sql
 
         const { data, error } = await supabase
             .from('tenant_users')
@@ -27,7 +24,7 @@ export class SupabaseUserRepository implements IUserRepository {
                     tenant_id,
                     role_permissions!inner (
                         permissions!inner (
-                            name
+                            key
                         )
                     )
                 )
@@ -36,15 +33,16 @@ export class SupabaseUserRepository implements IUserRepository {
             .eq('user_id', userId)
             .single();
 
+        console.log(`[Repo Debug] permissions for ${userId} in ${tenantId}`);
+        console.log(`Data: ${JSON.stringify(data, null, 2)}`);
+        console.log(`Error: ${JSON.stringify(error, null, 2)}`);
+
         if (error) {
-            // It's possible the user has no role or row doesn't exist.
-            // Check code?
             return [];
         }
 
         if (!data || !data.roles) return [];
 
-        // flatten permissions
         // flatten permissions
         // data.roles might be an array or object depending on relationship inference
         const roleData = Array.isArray(data.roles) ? data.roles[0] : data.roles;
@@ -56,8 +54,8 @@ export class SupabaseUserRepository implements IUserRepository {
         if (!Array.isArray(rolePermissions)) return [];
 
         const permissions = rolePermissions
-            .map((rp: any) => rp.permissions?.name)
-            .filter((name: any): name is string => typeof name === 'string');
+            .map((rp: any) => rp.permissions?.key) // Use 'key'
+            .filter((key: any): key is string => typeof key === 'string');
 
         // We return raw permissions, including '*'.
         // Expansion happens in the Application/RBAC layer, not here.

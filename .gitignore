@@ -27,3 +27,6 @@ pnpm-debug.log*
 
 # vercel
 .vercel
+
+# backups
+GotowaPaczka_Projekt_i_AI.zip

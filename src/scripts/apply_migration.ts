@@ -1,6 +1,10 @@
 import { Client } from 'pg';
 import fs from 'fs';
 import path from 'path';
+import dotenv from 'dotenv';
+
+// Load .env.local
+dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 
 const connectionString = process.env.DATABASE_URL || 'postgresql://postgres:postgres@127.0.0.1:54321/postgres';
 
@@ -12,7 +16,10 @@ async function applyMigration(file: string) {
     }
 
     const sql = fs.readFileSync(filePath, 'utf-8');
-    const client = new Client({ connectionString });
+    const client = new Client({
+        connectionString,
+        ssl: { rejectUnauthorized: false }
+    });
 
     try {
         await client.connect();

@@ -32,8 +32,8 @@ export function Sidebar({ isOpen, onClose, tenantSlug, labels }: SidebarProps & 
         };
     }, [isOpen]);
 
-    const libraryPath = `/admin/t/${tenantSlug}/apps`;
-    const dashboardPath = `/admin/t/${tenantSlug}`;
+    const libraryPath = `/admin/t/${tenantSlug}`;
+    const dashboardPath = `/admin/t/${tenantSlug}`; // Same root page for now since there's no separate dashboard module
 
     const isLibrary = pathname === libraryPath;
     const isDashboard = pathname === dashboardPath;

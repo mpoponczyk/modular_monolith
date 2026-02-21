@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import OtpInput from './OtpInput';
-import { requestChallenge, verifyChallenge } from './actions';
+import { requestChallengeAction, verifyChallengeAction } from '@/core/security/actions';
 import { useParams, useRouter } from 'next/navigation';
 import { Button } from "@/components/legacy/ui/button"
 
@@ -39,7 +39,7 @@ export default function TwoFactorForm({ locale }: TwoFactorFormProps) {
         setLoading(true);
         setError('');
         try {
-            await requestChallenge(tenantSlug, locale);
+            await requestChallengeAction(tenantSlug, locale);
             setStep('verify');
         } catch (err: any) {
             setError(err.message || t('failed_to_send_code'));
@@ -53,7 +53,7 @@ export default function TwoFactorForm({ locale }: TwoFactorFormProps) {
         setLoading(true);
         setError('');
         try {
-            const result = await verifyChallenge(tenantSlug, code);
+            const result = await verifyChallengeAction(tenantSlug, code);
             if (result && result.success && result.redirectUrl) {
                 router.push(result.redirectUrl);
             }

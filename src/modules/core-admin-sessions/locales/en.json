@@ -1,0 +1,30 @@
+{
+    "name": "Active Sessions",
+    "description": "View and revoke 2FA security session tokens.",
+    "sessions": {
+        "headers": {
+            "admin": "Administrator",
+            "device": "Device",
+            "type": "Type",
+            "status": "Status",
+            "activity": "Activity",
+            "actions": "Actions"
+        },
+        "badges": {
+            "you": "You",
+            "trusted": "Trusted",
+            "temporary": "Temporary",
+            "online": "Online",
+            "offline": "Offline"
+        },
+        "labels": {
+            "unknownDevice": "Unknown device",
+            "timeLog": "Log"
+        },
+        "actions": {
+            "logout": "Logout",
+            "confirmLogout": "Are you sure you want to close this session? The administrator will have to log in again."
+        },
+        "empty": "No active sessions to display."
+    }
+}

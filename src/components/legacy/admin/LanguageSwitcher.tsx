@@ -21,14 +21,18 @@ const languages = [
     { code: 'en', name: 'English', flag: '🇬🇧' },
 ]
 
-export default function LanguageSwitcher() {
+interface LanguageSwitcherProps {
+    initialLocale: string;
+}
+
+export default function LanguageSwitcher({ initialLocale }: LanguageSwitcherProps) {
     const router = useRouter();
-    const [currentCode, setCurrentCode] = useState('en'); // Default to en visually
+    const [mounted, setMounted] = useState(false);
+    // Default to the server-provided locale immediately to strictly match hydration
+    const [currentCode, setCurrentCode] = useState(initialLocale);
 
     useEffect(() => {
-        // Read cookie on mount to set initial visual state
-        const match = document.cookie.match(new RegExp('(^| )' + LOCALE_COOKIE_NAME + '=([^;]+)'));
-        if (match) setCurrentCode(match[2]);
+        setMounted(true);
     }, []);
 
     const handleLocaleChange = (newLocale: string) => {
@@ -44,10 +48,19 @@ export default function LanguageSwitcher() {
 
     const currentLanguage = languages.find(lang => lang.code === currentCode) || languages[0]
 
+    if (!mounted) {
+        return (
+            <Button variant="ghost" size="sm" className="gap-2 text-white hover:text-blue-200 hover:bg-blue-900/50">
+                <span className="text-lg">{currentLanguage.flag}</span>
+                <Globe className="h-4 w-4" />
+            </Button>
+        );
+    }
+
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="gap-2 text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent">
+                <Button variant="ghost" size="sm" className="gap-2 text-white hover:text-blue-200 hover:bg-blue-900/50">
                     <span className="text-lg">{currentLanguage.flag}</span>
                     <Globe className="h-4 w-4" />
                 </Button>

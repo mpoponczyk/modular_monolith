@@ -1,0 +1,26 @@
+{
+  "appId": "core-admin/planning",
+  "exists": true,
+  "checks": [
+    {
+      "name": "Structure",
+      "status": "FAIL",
+      "message": "index.ts missing"
+    },
+    {
+      "name": "Tenant Isolation",
+      "status": "PASS",
+      "message": "No infrastructure layer (Skipped)"
+    },
+    {
+      "name": "Security",
+      "status": "PASS",
+      "message": "No unsafe auth patterns found"
+    },
+    {
+      "name": "Cross-Module Imports",
+      "status": "PASS",
+      "message": "No cross-module imports found"
+    }
+  ]
+}

@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { useState } from "react"
 import { LayoutGrid } from "lucide-react"
 import LanguageSwitcher from "@/components/legacy/admin/LanguageSwitcher"
 import { Button } from "@/components/legacy/ui/button"
@@ -12,9 +13,10 @@ interface LegacyLoginLayoutProps {
     onLogin: (formData: FormData) => void;
     error: string | null;
     loading?: boolean;
+    initialLocale: string;
 }
 
-export function LegacyLoginLayout({ onLogin, error, loading }: LegacyLoginLayoutProps) {
+export function LegacyLoginLayout({ onLogin, error, loading, initialLocale }: LegacyLoginLayoutProps) {
     const { t } = useTranslation();
     const [localLoading, setLocalLoading] = useState(false);
     const isLoading = loading || localLoading;
@@ -34,7 +36,7 @@ export function LegacyLoginLayout({ onLogin, error, loading }: LegacyLoginLayout
                 </div>
 
                 <nav className="ml-auto flex items-center gap-4">
-                    <LanguageSwitcher />
+                    <LanguageSwitcher initialLocale={initialLocale} />
                 </nav>
             </header>
 

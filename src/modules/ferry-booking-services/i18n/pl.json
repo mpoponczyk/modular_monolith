@@ -1,0 +1,23 @@
+{
+    "services": {
+        "title": "Usługi",
+        "subtitle": "Zarządzaj dodatkowymi usługami",
+        "editService": "Edytuj usługę",
+        "newService": "Nowa usługa",
+        "serviceFormDescription": "Skonfiguruj szczegóły dodatkowej usługi i status dostępności.",
+        "noDescription": "Brak opisu",
+        "form": {
+            "name": "Nazwa usługi",
+            "description": "Opis usługi"
+        }
+    },
+    "common": {
+        "active": "Aktywne",
+        "inactive": "Nieaktywne",
+        "cancel": "Anuluj",
+        "save": "Zapisz",
+        "delete": "Usuń",
+        "confirmDelete": "Czy na pewno chcesz to usunąć?",
+        "loading": "Ładowanie..."
+    }
+}

@@ -1,0 +1,245 @@
+[dotenv@17.3.1] injecting env (6) from .env.local -- tip: 🤖 agentic secret storage: https://dotenvx.com/as2
+User ID: 9ba4ab2c-ba33-4ff3-a899-2048eb43e15a
+
+--- Orgs ---
+[
+  {
+    id: 'd78d22a2-1941-43e1-9360-d58ebdfd5f8b',
+    tenant_id: '22a83baa-2246-4470-8b3c-f0bf1958aca4',
+    name: 'Test Section Org',
+    owner_group_id: 'ff6fcf1c-778b-4b3d-9c51-563c7cedee2a',
+    created_at: 2026-02-17T02:03:38.265Z,
+    updated_at: 2026-02-17T02:03:38.265Z
+  }
+]
+
+--- Companies ---
+[
+  {
+    id: '81372bda-c5ae-4844-80d8-be89b54b39a9',
+    tenant_id: '22a83baa-2246-4470-8b3c-f0bf1958aca4',
+    name: 'Test Section Org',
+    created_at: 2026-02-17T02:03:39.465Z,
+    updated_at: 2026-02-17T02:03:39.465Z
+  }
+]
+
+--- Tenants ---
+[
+  {
+    id: '07545df1-7d92-4503-bd78-3efe19234cc4',
+    name: 'System',
+    slug: 'system',
+    status: 'active',
+    config: {},
+    created_at: 2026-02-15T02:43:17.843Z,
+    updated_at: 2026-02-15T02:43:17.843Z
+  },
+  {
+    id: '22a83baa-2246-4470-8b3c-f0bf1958aca4',
+    name: 'Test Tenant',
+    slug: 'test-tenant',
+    status: 'active',
+    config: {},
+    created_at: 2026-02-17T02:01:07.382Z,
+    updated_at: 2026-02-17T11:10:16.845Z
+  },
+  {
+    id: 'c54ecbf8-919f-4c46-bf44-86db4175abe3',
+    name: 'Validation Tenant',
+    slug: 'val-1771367778897',
+    status: 'active',
+    config: {},
+    created_at: 2026-02-17T22:36:18.984Z,
+    updated_at: 2026-02-17T22:36:18.984Z
+  },
+  {
+    id: 'f681ed62-c433-4aac-877b-6ef5a18a4136',
+    name: 'Demo Tenant',
+    slug: 'demo-tenant',
+    status: 'active',
+    config: {},
+    created_at: 2026-02-17T22:47:42.138Z,
+    updated_at: 2026-02-17T22:47:42.138Z
+  },
+  {
+    id: 'a8a5a366-218c-4f1d-83bd-273a388912d8',
+    name: 'Validation Tenant',
+    slug: 'val-1771370059394',
+    status: 'active',
+    config: {},
+    created_at: 2026-02-17T23:14:19.774Z,
+    updated_at: 2026-02-17T23:14:19.774Z
+  }
+]
+
+--- Roles ---
+[
+  {
+    id: 'd36730c6-de51-415d-94f4-759cd47e4f8c',
+    tenant_id: '22a83baa-2246-4470-8b3c-f0bf1958aca4',
+    name: 'UAT_SUPERADMIN',
+    description: 'Auto-generated UAT Superadmin',
+    created_at: 2026-02-18T23:19:48.701Z,
+    updated_at: 2026-02-18T23:19:48.701Z
+  }
+]
+
+--- Permissions ---
+[
+  {
+    key: 'ferries.view',
+    description: 'View Ferries',
+    created_at: 2026-02-18T15:02:53.489Z
+  },
+  {
+    key: 'ferries.manage',
+    description: 'Manage Ferries',
+    created_at: 2026-02-18T15:02:53.489Z
+  },
+  {
+    key: 'routes.view',
+    description: 'View Routes',
+    created_at: 2026-02-18T15:02:53.489Z
+  },
+  {
+    key: 'routes.manage',
+    description: 'Manage Routes',
+    created_at: 2026-02-18T15:02:53.489Z
+  },
+  {
+    key: 'services.view',
+    description: 'View Services',
+    created_at: 2026-02-18T15:02:53.489Z
+  },
+  {
+    key: 'services.manage',
+    description: 'Manage Services',
+    created_at: 2026-02-18T15:02:53.489Z
+  },
+  {
+    key: 'trips.view',
+    description: 'View Trips',
+    created_at: 2026-02-18T15:02:53.489Z
+  },
+  {
+    key: 'trips.manage',
+    description: 'Manage Trips',
+    created_at: 2026-02-18T15:02:53.489Z
+  },
+  {
+    key: 'reservations.view',
+    description: 'View Reservations',
+    created_at: 2026-02-18T15:02:53.489Z
+  },
+  {
+    key: 'reservations.manage',
+    description: 'Manage Reservations',
+    created_at: 2026-02-18T15:02:53.489Z
+  },
+  {
+    key: 'orders.view',
+    description: 'View Orders',
+    created_at: 2026-02-18T15:02:53.489Z
+  },
+  {
+    key: 'orders.manage',
+    description: 'Manage Orders',
+    created_at: 2026-02-18T15:02:53.489Z
+  },
+  {
+    key: 'invoices.view',
+    description: 'View Invoices',
+    created_at: 2026-02-18T15:02:53.489Z
+  },
+  {
+    key: 'partners.view',
+    description: 'View Partners',
+    created_at: 2026-02-18T15:02:53.489Z
+  },
+  {
+    key: 'partners.manage',
+    description: 'Manage Partners',
+    created_at: 2026-02-18T15:02:53.489Z
+  },
+  {
+    key: 'pricing.view',
+    description: 'View Pricing Profiles',
+    created_at: 2026-02-18T15:02:53.489Z
+  },
+  {
+    key: 'pricing.manage',
+    description: 'Manage Pricing Profiles',
+    created_at: 2026-02-18T15:02:53.489Z
+  },
+  {
+    key: 'planning.view',
+    description: 'View Schedule/Gantt/Calendar',
+    created_at: 2026-02-18T15:02:53.489Z
+  },
+  {
+    key: 'planning.manage',
+    description: 'Manage Schedule/Gantt/Calendar',
+    created_at: 2026-02-18T15:02:53.489Z
+  },
+  {
+    key: 'manifests.view',
+    description: 'View Manifests',
+    created_at: 2026-02-18T15:02:53.489Z
+  },
+  {
+    key: 'reporting.view',
+    description: 'View Sales Reports',
+    created_at: 2026-02-18T15:02:53.489Z
+  },
+  {
+    key: 'users.view',
+    description: 'View Users',
+    created_at: 2026-02-18T15:02:53.489Z
+  },
+  {
+    key: 'users.manage',
+    description: 'Manage Users',
+    created_at: 2026-02-18T15:02:53.489Z
+  },
+  {
+    key: 'roles.view',
+    description: 'View Roles',
+    created_at: 2026-02-18T15:02:53.489Z
+  },
+  {
+    key: 'roles.manage',
+    description: 'Manage Roles',
+    created_at: 2026-02-18T15:02:53.489Z
+  },
+  {
+    key: 'security.view',
+    description: 'View Security/Sessions',
+    created_at: 2026-02-18T15:02:53.489Z
+  },
+  {
+    key: 'settings.view',
+    description: 'View Settings',
+    created_at: 2026-02-18T15:02:53.489Z
+  },
+  {
+    key: 'settings.manage',
+    description: 'Manage Settings',
+    created_at: 2026-02-18T15:02:53.489Z
+  },
+  {
+    key: 'cockpits.manage',
+    description: 'Manage Cockpits UI',
+    created_at: 2026-02-18T15:02:53.489Z
+  },
+  {
+    key: 'crm.view',
+    description: 'UAT Auto',
+    created_at: 2026-02-18T23:23:52.456Z
+  },
+  {
+    key: 'admin.access',
+    description: 'UAT Auto',
+    created_at: 2026-02-18T23:23:52.508Z
+  }
+]

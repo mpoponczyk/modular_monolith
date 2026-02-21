@@ -17,7 +17,9 @@ export default async function TenantLayout({
     const { tenantSlug } = await params;
 
     // 0. Resolve Full Auth Context with explicit tenantSlug
+    const start = performance.now();
     const authContext = await resolveAuthContext(tenantSlug);
+    console.log(`[Perf] TenantLayout resolveAuthContext: ${(performance.now() - start).toFixed(2)}ms`);
 
     if (!authContext) {
         // Strict Check: Is it Auth Failure or Tenant Failure?

@@ -45,7 +45,9 @@ export class MenuService {
             params.p_active_variant_id = activeVariantId;
         }
 
+        const start = performance.now();
         const { data, error } = await supabase.rpc('resolve_menu_structure', params);
+        console.log(`[Perf] MenuService RPC resolve_menu_structure: ${(performance.now() - start).toFixed(2)}ms`);
 
         if (error) {
             console.error('MenuService.getMenuForCurrentUser: RPC Error', error);

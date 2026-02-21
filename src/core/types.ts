@@ -94,6 +94,15 @@ export interface ModuleDefinition {
    * Route definitions for this module.
    */
   routes: RouteDefinition[];
+
+  /**
+   * Module level translations for name and description.
+   * A function that dynamically imports the correct locale JSON file from the module folder.
+   */
+  getTranslations?: (locale: string) => Promise<{
+    name: string;
+    description: string;
+  } | null>;
 }
 
 /**

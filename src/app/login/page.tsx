@@ -11,6 +11,20 @@ export default async function LoginPage(props: { searchParams: Promise<{ error?:
     const locale = await getLocaleFromCookies();
     const dict = await getDictionary(locale, 'auth');
 
+    // 0. Auto-redirect if already logged in
+    const supabaseCheck = createAuthClient();
+    const { data: { user } } = await supabaseCheck.auth.getUser();
+
+    if (user) {
+        // Resolve tenants and route automatically
+        const { data: tenants } = await supabaseCheck.rpc('resolve_user_tenants');
+        if (tenants && tenants.length === 1) {
+            return redirect(`/admin/t/${tenants[0].slug}`);
+        } else if (tenants && tenants.length > 1) {
+            return redirect('/admin/select-tenant');
+        }
+    }
+
     async function handleLogin(formData: FormData) {
         'use server';
 
@@ -57,6 +71,7 @@ export default async function LoginPage(props: { searchParams: Promise<{ error?:
             <LegacyLoginLayout
                 onLogin={handleLogin}
                 error={error}
+                initialLocale={locale}
             />
         </I18nProvider>
     );

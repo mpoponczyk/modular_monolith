@@ -1,0 +1,29 @@
+{
+    "admin": {
+        "ordersPage": {
+            "title": "Orders",
+            "manageOrders": "Manage your orders and invoices",
+            "table": {
+                "date": "Date",
+                "orderId": "Order ID",
+                "customer": "Customer",
+                "items": "Items",
+                "status": "Status",
+                "totalAmount": "Amount",
+                "actions": "Actions",
+                "noOrders": "No orders found.",
+                "pax": "Pax",
+                "manage": "Manage",
+                "reservationsInOrder": "Reservations in Order",
+                "actions_label": {
+                    "downloadInvoice": "Download Invoice",
+                    "viewDetails": "View Details",
+                    "cancelOrder": "Cancel Order"
+                }
+            }
+        }
+    },
+    "common": {
+        "loading": "Loading..."
+    }
+}

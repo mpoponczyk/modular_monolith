@@ -1,65 +1,33 @@
 
 import { Client } from 'pg';
 import dotenv from 'dotenv';
-import path from 'path';
+dotenv.config({ path: '.env.local' });
 
-// Load env
-dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
+const client = new Client({ connectionString: process.env.DATABASE_URL });
 
 async function inspect() {
-    const client = new Client({
-        connectionString: process.env.DATABASE_URL,
-        ssl: { rejectUnauthorized: false },
-        connectionTimeoutMillis: 5000
-    });
+    await client.connect();
 
-    try {
-        await client.connect();
-        console.log('✅ Connected.');
+    // Inspect organization_section_items Columns
+    console.log('\n--- ORGANIZATION_SECTION_ITEMS ---');
+    const cols = await client.query("SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'organization_section_items'");
+    console.table(cols.rows);
 
-        // 1. List Tables
-        const resTables = await client.query(`
-            SELECT table_schema, table_name 
-            FROM information_schema.tables 
-            WHERE table_schema = 'public' 
-            ORDER BY table_name;
-        `);
-        console.log('--- TABLES ---');
-        resTables.rows.forEach(r => console.log(`${r.table_schema}.${r.table_name}`));
+    // Inspect Constraints for organization_section_items to see FKs
+    const cons = await client.query(`
+        SELECT tc.constraint_name, kcu.column_name, ccu.table_name AS foreign_table_name, ccu.column_name AS foreign_column_name 
+        FROM information_schema.table_constraints AS tc 
+        JOIN information_schema.key_column_usage AS kcu ON tc.constraint_name = kcu.constraint_name
+        JOIN information_schema.constraint_column_usage AS ccu ON ccu.constraint_name = tc.constraint_name
+        WHERE tc.table_name = 'organization_section_items'
+    `);
+    console.table(cons.rows.map(r => ({
+        col: r.column_name,
+        fk_table: r.foreign_table_name,
+        fk_col: r.foreign_column_name
+    })));
 
-        // 2. Describe tenant_users
-        console.log('\n--- TENANT_USERS COLUMNS ---');
-        const resTu = await client.query(`
-            SELECT column_name, data_type, is_nullable
-            FROM information_schema.columns
-            WHERE table_name = 'tenant_users';
-        `);
-        resTu.rows.forEach(r => console.log(`${r.column_name} (${r.data_type})`));
-
-        // 3. Check for roles table
-        console.log('\n--- ROLES TABLE CONTENT ---');
-        try {
-            const resRoles = await client.query('SELECT * FROM public.roles');
-            if (resRoles.rows.length === 0) console.log('(Empty)');
-            resRoles.rows.forEach(r => console.log(JSON.stringify(r)));
-        } catch (e) {
-            console.log('Error querying roles:', (e as any).message);
-        }
-
-        // 4. Check Triggers on tenant_users
-        console.log('\n--- TRIGGERS ON TENANT_USERS ---');
-        const resTrig = await client.query(`
-            SELECT trigger_name, event_manipulation, action_statement, action_orientation
-            FROM information_schema.triggers
-            WHERE event_object_table = 'tenant_users';
-        `);
-        resTrig.rows.forEach(r => console.log(`${r.trigger_name}: ${r.event_manipulation}`));
-
-    } catch (e) {
-        console.error('❌ Error:', e);
-    } finally {
-        await client.end();
-    }
+    await client.end();
 }
 
 inspect();

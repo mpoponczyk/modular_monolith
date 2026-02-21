@@ -1,0 +1,24 @@
+{
+    "title": "Zarządzanie Flotą",
+    "subtitle": "Zarządzaj statkami i ich pojemnością",
+    "totalShips": "Wszystkie Statki",
+    "table": {
+        "name": "Nazwa Statku",
+        "passengerCap": "Pasażerowie",
+        "carCap": "Samochody",
+        "actions": "Reaguj",
+        "noShips": "Nie znaleziono statków. Dodaj nowy.",
+        "manageZones": "Edytuj Statek"
+    },
+    "addFerry": "Dodaj Prom",
+    "newFerry": "Nowy Prom",
+    "form": {
+        "name": "Nazwa",
+        "add": "Dodaj Statek",
+        "edit": "Zapisz Zmiany"
+    },
+    "active": "Aktywny",
+    "inactive": "Nieaktywny",
+    "delete": "Usuń",
+    "confirmDelete": "Czy na pewno chcesz to usunąć?"
+}

@@ -1,0 +1,8 @@
+{
+    "admin": {
+        "invoicesPage": {
+            "title": "Invoices",
+            "manageInvoices": "Manage and download invoices"
+        }
+    }
+}

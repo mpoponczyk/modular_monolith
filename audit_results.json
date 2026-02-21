@@ -1,0 +1,355 @@
+[
+  {
+    "moduleName": "core-admin-cockpits",
+    "appId": "core-admin-cockpits",
+    "structure": "PASS",
+    "content": "PARTIAL",
+    "sql": "PASS",
+    "translations": "PASS",
+    "routing": "PASS",
+    "security": "PASS",
+    "missingItems": [],
+    "defects": [
+      "DELETE_README.md appears incomplete or template-like"
+    ]
+  },
+  {
+    "moduleName": "core-admin-planning",
+    "appId": "core-admin-planning",
+    "structure": "PASS",
+    "content": "PARTIAL",
+    "sql": "PASS",
+    "translations": "PASS",
+    "routing": "PASS",
+    "security": "PASS",
+    "missingItems": [],
+    "defects": [
+      "DELETE_README.md appears incomplete or template-like"
+    ]
+  },
+  {
+    "moduleName": "core-admin-roles",
+    "appId": "core-admin-roles",
+    "structure": "PASS",
+    "content": "PARTIAL",
+    "sql": "PASS",
+    "translations": "PASS",
+    "routing": "PASS",
+    "security": "PASS",
+    "missingItems": [],
+    "defects": [
+      "DELETE_README.md appears incomplete or template-like"
+    ]
+  },
+  {
+    "moduleName": "core-admin-sessions",
+    "appId": "core-admin-sessions",
+    "structure": "PASS",
+    "content": "PARTIAL",
+    "sql": "PASS",
+    "translations": "PASS",
+    "routing": "PASS",
+    "security": "PASS",
+    "missingItems": [],
+    "defects": [
+      "DELETE_README.md appears incomplete or template-like"
+    ]
+  },
+  {
+    "moduleName": "core-admin-settings",
+    "appId": "core-admin-settings",
+    "structure": "PASS",
+    "content": "PARTIAL",
+    "sql": "PASS",
+    "translations": "PASS",
+    "routing": "PASS",
+    "security": "PASS",
+    "missingItems": [],
+    "defects": [
+      "DELETE_README.md appears incomplete or template-like"
+    ]
+  },
+  {
+    "moduleName": "core-admin-users",
+    "appId": "core-admin-users",
+    "structure": "PASS",
+    "content": "PARTIAL",
+    "sql": "PASS",
+    "translations": "PASS",
+    "routing": "PASS",
+    "security": "PASS",
+    "missingItems": [],
+    "defects": [
+      "DELETE_README.md appears incomplete or template-like"
+    ]
+  },
+  {
+    "moduleName": "crm-customers",
+    "appId": "crm-customers",
+    "structure": "PASS",
+    "content": "PARTIAL",
+    "sql": "PASS",
+    "translations": "PASS",
+    "routing": "PASS",
+    "security": "PASS",
+    "missingItems": [],
+    "defects": [
+      "DELETE_README.md appears incomplete or template-like"
+    ]
+  },
+  {
+    "moduleName": "crm-partners",
+    "appId": "crm-partners",
+    "structure": "PASS",
+    "content": "PARTIAL",
+    "sql": "PASS",
+    "translations": "PASS",
+    "routing": "PASS",
+    "security": "PASS",
+    "missingItems": [],
+    "defects": [
+      "DELETE_README.md appears incomplete or template-like"
+    ]
+  },
+  {
+    "moduleName": "example-dashboard",
+    "appId": "example-dashboard",
+    "structure": "PASS",
+    "content": "PARTIAL",
+    "sql": "PASS",
+    "translations": "PASS",
+    "routing": "PASS",
+    "security": "PASS",
+    "missingItems": [],
+    "defects": [
+      "DELETE_README.md appears incomplete or template-like"
+    ]
+  },
+  {
+    "moduleName": "ferry-booking-ferries",
+    "appId": "ferry-booking-ferries",
+    "structure": "PASS",
+    "content": "PARTIAL",
+    "sql": "PASS",
+    "translations": "PASS",
+    "routing": "PASS",
+    "security": "PASS",
+    "missingItems": [],
+    "defects": [
+      "DELETE_README.md appears incomplete or template-like"
+    ]
+  },
+  {
+    "moduleName": "ferry-booking-invoices",
+    "appId": "ferry-booking-invoices",
+    "structure": "PASS",
+    "content": "PARTIAL",
+    "sql": "PASS",
+    "translations": "PASS",
+    "routing": "PASS",
+    "security": "PASS",
+    "missingItems": [],
+    "defects": [
+      "DELETE_README.md appears incomplete or template-like"
+    ]
+  },
+  {
+    "moduleName": "ferry-booking-orders",
+    "appId": "ferry-booking-orders",
+    "structure": "PASS",
+    "content": "PARTIAL",
+    "sql": "PASS",
+    "translations": "PASS",
+    "routing": "PASS",
+    "security": "PASS",
+    "missingItems": [],
+    "defects": [
+      "DELETE_README.md appears incomplete or template-like"
+    ]
+  },
+  {
+    "moduleName": "ferry-booking-reservations",
+    "appId": "ferry-booking-reservations",
+    "structure": "PASS",
+    "content": "PARTIAL",
+    "sql": "PASS",
+    "translations": "PASS",
+    "routing": "PASS",
+    "security": "PASS",
+    "missingItems": [],
+    "defects": [
+      "DELETE_README.md appears incomplete or template-like"
+    ]
+  },
+  {
+    "moduleName": "ferry-booking-routes",
+    "appId": "ferry-booking-routes",
+    "structure": "PASS",
+    "content": "PARTIAL",
+    "sql": "PASS",
+    "translations": "PASS",
+    "routing": "PASS",
+    "security": "PASS",
+    "missingItems": [],
+    "defects": [
+      "DELETE_README.md appears incomplete or template-like"
+    ]
+  },
+  {
+    "moduleName": "ferry-booking-services",
+    "appId": "ferry-booking-services",
+    "structure": "PASS",
+    "content": "PARTIAL",
+    "sql": "PASS",
+    "translations": "PASS",
+    "routing": "PASS",
+    "security": "PASS",
+    "missingItems": [],
+    "defects": [
+      "DELETE_README.md appears incomplete or template-like"
+    ]
+  },
+  {
+    "moduleName": "ferry-booking-trips",
+    "appId": "ferry-booking-trips",
+    "structure": "PASS",
+    "content": "PARTIAL",
+    "sql": "PASS",
+    "translations": "PASS",
+    "routing": "PASS",
+    "security": "PASS",
+    "missingItems": [],
+    "defects": [
+      "DELETE_README.md appears incomplete or template-like"
+    ]
+  },
+  {
+    "moduleName": "ferry-planning-calendar",
+    "appId": "ferry-planning-calendar",
+    "structure": "PASS",
+    "content": "PARTIAL",
+    "sql": "PASS",
+    "translations": "PASS",
+    "routing": "PASS",
+    "security": "PASS",
+    "missingItems": [],
+    "defects": [
+      "DELETE_README.md appears incomplete or template-like"
+    ]
+  },
+  {
+    "moduleName": "ferry-planning-gantt",
+    "appId": "ferry-planning-gantt",
+    "structure": "PASS",
+    "content": "PARTIAL",
+    "sql": "PASS",
+    "translations": "PASS",
+    "routing": "PASS",
+    "security": "PASS",
+    "missingItems": [],
+    "defects": [
+      "DELETE_README.md appears incomplete or template-like"
+    ]
+  },
+  {
+    "moduleName": "ferry-planning-templates",
+    "appId": "ferry-planning-templates",
+    "structure": "PASS",
+    "content": "PARTIAL",
+    "sql": "PASS",
+    "translations": "PASS",
+    "routing": "PASS",
+    "security": "PASS",
+    "missingItems": [],
+    "defects": [
+      "DELETE_README.md appears incomplete or template-like"
+    ]
+  },
+  {
+    "moduleName": "ferry-pricing-profiles",
+    "appId": "ferry-pricing-profiles",
+    "structure": "FAIL",
+    "content": "PARTIAL",
+    "sql": "PARTIAL",
+    "translations": "PARTIAL",
+    "routing": "PASS",
+    "security": "PASS",
+    "missingItems": [
+      "File: README.md",
+      "File: DELETE_README.md",
+      "Dir: sql",
+      "Dir: translations"
+    ],
+    "defects": [
+      "README.md missing section covering: Purpose",
+      "README.md missing section covering: routes",
+      "README.md missing section covering: Permissions",
+      "README.md missing section covering: Data model",
+      "README.md missing section covering: RLS",
+      "README.md missing section covering: UI parity",
+      "README.md missing section covering: verify",
+      "README.md missing section covering: risks",
+      "sql dir missing without justification",
+      "translations dir missing without justification"
+    ]
+  },
+  {
+    "moduleName": "ferry-pricing-routes",
+    "appId": "ferry-pricing-routes",
+    "structure": "FAIL",
+    "content": "PARTIAL",
+    "sql": "PARTIAL",
+    "translations": "PARTIAL",
+    "routing": "PASS",
+    "security": "PASS",
+    "missingItems": [
+      "File: README.md",
+      "File: DELETE_README.md",
+      "Dir: sql",
+      "Dir: translations"
+    ],
+    "defects": [
+      "README.md missing section covering: Purpose",
+      "README.md missing section covering: routes",
+      "README.md missing section covering: Permissions",
+      "README.md missing section covering: Data model",
+      "README.md missing section covering: RLS",
+      "README.md missing section covering: UI parity",
+      "README.md missing section covering: verify",
+      "README.md missing section covering: risks",
+      "sql dir missing without justification",
+      "translations dir missing without justification",
+      "Cross-module import: @/modules/ferry-booking-routes in actions.ts",
+      "Cross-module import: @/modules/ferry-booking-routes in Page.tsx",
+      "Cross-module import: @/modules/ferry-booking-routes in RoutePricingTable.tsx"
+    ]
+  },
+  {
+    "moduleName": "ferry-reporting-manifests",
+    "appId": "ferry-reporting-manifests",
+    "structure": "PASS",
+    "content": "PARTIAL",
+    "sql": "PASS",
+    "translations": "PASS",
+    "routing": "PASS",
+    "security": "PASS",
+    "missingItems": [],
+    "defects": [
+      "DELETE_README.md appears incomplete or template-like"
+    ]
+  },
+  {
+    "moduleName": "ferry-reporting-sales",
+    "appId": "ferry-reporting-sales",
+    "structure": "PASS",
+    "content": "PARTIAL",
+    "sql": "PASS",
+    "translations": "PASS",
+    "routing": "PASS",
+    "security": "PASS",
+    "missingItems": [],
+    "defects": [
+      "DELETE_README.md appears incomplete or template-like"
+    ]
+  }
+]

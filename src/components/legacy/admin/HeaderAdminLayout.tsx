@@ -29,6 +29,7 @@ interface HeaderAdminLayoutProps {
     };
     onLogout: () => Promise<void>;
     initialTheme: string;
+    initialLocale: string;
     sidebarLabels: {
         appLibrary: string;
         dashboard: string;
@@ -43,6 +44,7 @@ export function HeaderAdminLayout({
     user,
     onLogout,
     initialTheme,
+    initialLocale,
     sidebarLabels
 }: HeaderAdminLayoutProps) {
     const pathname = usePathname();
@@ -52,15 +54,15 @@ export function HeaderAdminLayout({
         <div className="flex min-h-screen flex-col bg-background transition-colors duration-300 font-sans">
             {/* Header */}
             {/* Header */}
-            <header className="bg-sidebar text-sidebar-foreground border-b border-sidebar-border shadow-md sticky top-0 z-50">
-                <div className="w-full px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between h-16 items-center">
+            <header className="h-12 bg-[#172554] border-b border-blue-900/50 text-white shadow-md sticky top-0 z-50 transition-colors duration-300">
+                <div className="w-full px-4 sm:px-6 lg:px-8 h-full">
+                    <div className="flex justify-between h-full items-center">
                         {/* LEFT SIDE: Menu Button + Logo */}
                         <div className="flex items-center gap-4">
                             {/* Menu Toggle (Left Side) - Visible on ALL screens now as main nav */}
                             <button
                                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                                className="inline-flex items-center justify-center p-2 rounded-md text-sidebar-foreground hover:bg-sidebar-accent focus:outline-none"
+                                className="inline-flex items-center justify-center p-2 rounded-md text-white hover:text-blue-200 hover:bg-blue-900/50 focus:outline-none transition-colors"
                                 aria-label="Menu"
                             >
                                 <Menu size={24} />
@@ -78,13 +80,13 @@ export function HeaderAdminLayout({
                         <div className="flex items-center gap-4">
                             <div className="hidden md:flex items-center gap-4">
                                 <UserDropdown
-                                    email={user.email || 'User'}
+                                    user={user}
                                     initialTheme={initialTheme}
                                 />
-                                <LanguageSwitcher />
+                                <LanguageSwitcher initialLocale={initialLocale} />
                                 <form action={signOutAction}>
                                     <button
-                                        className="flex items-center justify-center p-2 text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent rounded-md transition-colors"
+                                        className="flex items-center justify-center p-2 rounded-md text-white hover:text-blue-200 hover:bg-blue-900/50 transition-colors"
                                         title="Sign Out"
                                     >
                                         <LogOut size={20} />

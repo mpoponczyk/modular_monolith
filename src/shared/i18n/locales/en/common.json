@@ -13,13 +13,10 @@
         "dashboard": "Dashboard",
         "menu": "Menu"
     },
-    "apps": {
-        "title": "App Library",
-        "sections": {
-            "general": "General",
-            "finance": "Finance",
-            "hr": "HR",
-            "operations": "Operations"
-        }
+    "access_denied": {
+        "title": "Access Denied",
+        "description": "You do not have the required permissions to view this module. Please contact your administrator if you believe this is an error.",
+        "missing_permission": "Missing Permission",
+        "back_to_dashboard": "Back to Dashboard"
     }
 }

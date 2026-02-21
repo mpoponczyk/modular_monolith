@@ -4,6 +4,7 @@ import type { NextRequest } from 'next/server';
 import { verifyTwoFaCookie } from '@/core/security/twofaCookie';
 
 export async function middleware(request: NextRequest) {
+    const start = performance.now();
     const { pathname } = request.nextUrl;
 
     // 1. Strict Transport Gate: Admin Routes Only
@@ -24,8 +25,14 @@ export async function middleware(request: NextRequest) {
         // Regex to match /admin/t/[slug]/*
         const tenantMatch = pathname.match(/^\/admin\/t\/([^\/]+)/);
 
+        let response = NextResponse.next();
+
         if (tenantMatch) {
             const tenantSlug = tenantMatch[1];
+
+            // Strict Context Injection: Ensure Layout receives tenant context for ALL tenant routes (including 2FA page)
+            response.headers.set('x-pathname', pathname);
+            response.headers.set('x-tenant-slug', tenantSlug);
 
             // Exclude the 2FA page itself from checks to avoid loop
             if (!pathname.startsWith(`/admin/t/${tenantSlug}/2fa`)) {
@@ -36,8 +43,13 @@ export async function middleware(request: NextRequest) {
 
                 let isValid = false;
 
+
                 if (twoFaCookie) {
+                    const tStart = performance.now();
+                    const { verifyTwoFaCookie } = await import('@/core/security/twofaCookie'); // Dynamic import to avoid early load?
                     const payload = await verifyTwoFaCookie(twoFaCookie.value);
+                    console.log(`[Perf] Middleware Verify 2FA: ${(performance.now() - tStart).toFixed(2)}ms`);
+
                     if (payload && payload.tenantSlug === tenantSlug) {
                         isValid = true;
                     }
@@ -49,7 +61,17 @@ export async function middleware(request: NextRequest) {
                     return NextResponse.redirect(url);
                 }
             }
+
+
         }
+
+        const mEnd = performance.now();
+        const duration = (mEnd - start).toFixed(2);
+        if (parseFloat(duration) > 50) {
+            console.log(`[Perf] Middleware/Admin overhead: ${duration}ms`);
+        }
+
+        return response;
     }
 
     const response = NextResponse.next();

@@ -13,13 +13,10 @@
         "dashboard": "Panel Główny",
         "menu": "Menu"
     },
-    "apps": {
-        "title": "Biblioteka Aplikacji",
-        "sections": {
-            "general": "Ogólne",
-            "finance": "Finanse",
-            "hr": "Kadry i Płace",
-            "operations": "Operacje"
-        }
+    "access_denied": {
+        "title": "Brak Dostępu",
+        "description": "Nie masz wymaganych uprawnień do przeglądania tego modułu. Skontaktuj się z administratorem, jeśli uważasz, że to błąd.",
+        "missing_permission": "Brakujące Uprawnienie",
+        "back_to_dashboard": "Powrót do Panelu"
     }
 }

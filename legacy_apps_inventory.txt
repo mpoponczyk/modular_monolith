@@ -1,0 +1,402 @@
+🔍 Scanning for Admin Apps...
+
+--- SECTIONS ---
+[b1d7d8e8-9e1e-4b1e-8e1e-1e1e1e1e1e1e] menu.sections.cockpits (Hidden: false)
+[79fe8ca1-294f-4879-ad02-8d0fa99cf05b] menu.sections.sales (Hidden: false)
+[b6f14ffa-f2bd-49db-9c8c-bd789f6053b3] menu.sections.logistics (Hidden: false)
+[2b053be7-3c29-4fdf-b46b-608ec603a71f] menu.sections.planning (Hidden: false)
+[2e2e2e2e-2e2e-2e2e-2e2e-2e2e2e2e2e2e] menu.sections.system (Hidden: false)
+
+--- APPS (Total: 38) ---
+APP: Accommodation
+  ID: app_accommodation
+  Route: #
+  Icon: Hotel
+  Type: link
+  Component: N/A
+  Section: menu.sections.logistics
+  Order: 40
+  Active: true
+  Flags: Visible=true
+APP: admin.businessPartners
+  ID: partners
+  Route: /admin/partners
+  Icon: Building2
+  Type: link
+  Component: N/A
+  Section: menu.sections.sales
+  Order: 50
+  Active: true
+  Flags: Visible=true
+APP: admin.categories.appName
+  ID: menu_sections
+  Route: /admin/menu-sections
+  Icon: Library
+  Type: link
+  Component: N/A
+  Section: menu.sections.system
+  Order: 50
+  Active: true
+  Flags: Visible=true
+APP: admin.cockpit.additional_services
+  ID: cockpit_1c61f46f-fcd3-41f9-919c-be956ea28ee4
+  Route: /admin/cockpits/1c61f46f-fcd3-41f9-919c-be956ea28ee4
+  Icon: Package
+  Type: link
+  Component: N/A
+  Section: menu.sections.cockpits
+  Order: 60
+  Active: false
+  Flags: Visible=false
+APP: admin.cockpit.custom.test_cockpit
+  ID: cockpit_821276c7-9bc3-4292-9139-a24094d515a7
+  Route: /admin/cockpits/821276c7-9bc3-4292-9139-a24094d515a7
+  Icon: LayoutTemplate
+  Type: link
+  Component: N/A
+  Section: menu.sections.cockpits
+  Order: 80
+  Active: false
+  Flags: Visible=false
+APP: admin.cockpit.fleet
+  ID: cockpit_69d0a5ce-b21a-42cd-88ca-cd07b2c73958
+  Route: /admin/cockpits/69d0a5ce-b21a-42cd-88ca-cd07b2c73958
+  Icon: Ship
+  Type: link
+  Component: N/A
+  Section: menu.sections.cockpits
+  Order: 50
+  Active: true
+  Flags: Visible=true
+APP: admin.cockpit.management
+  ID: cockpit_d3d7d8e8-9e1e-4b1e-8e1e-1e1e1e1e1e1e
+  Route: /admin/cockpits/d3d7d8e8-9e1e-4b1e-8e1e-1e1e1e1e1e1e
+  Icon: Database
+  Type: link
+  Component: N/A
+  Section: menu.sections.cockpits
+  Order: 20
+  Active: false
+  Flags: Visible=false
+APP: admin.cockpit.operational
+  ID: cockpit_c2d7d8e8-9e1e-4b1e-8e1e-1e1e1e1e1e1e
+  Route: /admin/cockpits/c2d7d8e8-9e1e-4b1e-8e1e-1e1e1e1e1e1e
+  Icon: Activity
+  Type: link
+  Component: N/A
+  Section: menu.sections.cockpits
+  Order: 40
+  Active: false
+  Flags: Visible=false
+APP: admin.cockpit.sales
+  ID: cockpit_79fe8ca1-294f-4879-ad02-8d0fa99cf05b
+  Route: /admin/sales
+  Icon: BadgeDollarSign
+  Type: link
+  Component: N/A
+  Section: menu.sections.cockpits
+  Order: 30
+  Active: true
+  Flags: Visible=true
+APP: admin.cockpit.settings
+  ID: cockpit_2e2e2e2e-2e2e-2e2e-2e2e-2e2e2e2e2e2e
+  Route: /admin/cockpits/2e2e2e2e-2e2e-2e2e-2e2e-2e2e2e2e2e2e
+  Icon: Settings
+  Type: link
+  Component: N/A
+  Section: menu.sections.system
+  Order: 100
+  Active: false
+  Flags: Visible=false
+APP: admin.cockpit.system
+  ID: cockpit_e4d7d8e8-9e1e-4b1e-8e1e-1e1e1e1e1e1e
+  Route: /admin/cockpits/e4d7d8e8-9e1e-4b1e-8e1e-1e1e1e1e1e1e
+  Icon: Server
+  Type: link
+  Component: N/A
+  Section: menu.sections.cockpits
+  Order: 10
+  Active: false
+  Flags: Visible=false
+APP: admin.cockpit.users
+  ID: cockpit_c2e8d9f0-1a2b-3c4d-5e6f-7a8b9c0d1e2f
+  Route: /admin/users-cockpit
+  Icon: Users
+  Type: link
+  Component: N/A
+  Section: menu.sections.cockpits
+  Order: 99
+  Active: false
+  Flags: Visible=false
+APP: admin.cockpitEditor.title
+  ID: app_cockpit_editor
+  Route: /admin/cockpit-editor
+  Icon: Settings
+  Type: link
+  Component: N/A
+  Section: menu.sections.system
+  Order: 60
+  Active: false
+  Flags: Visible=false
+APP: admin.cockpitPainter
+  ID: cockpit_painter
+  Route: /admin/settings/cockpit-painter
+  Icon: Palette
+  Type: link
+  Component: N/A
+  Section: menu.sections.system
+  Order: 90
+  Active: true
+  Flags: Visible=true
+APP: admin.cockpits
+  ID: cockpit_b1d7d8e8-9e1e-4b1e-8e1e-1e1e1e1e1e1e
+  Route: /admin/cockpits/b1d7d8e8-9e1e-4b1e-8e1e-1e1e1e1e1e1e
+  Icon: LayoutGrid
+  Type: link
+  Component: N/A
+  Section: menu.sections.cockpits
+  Order: 70
+  Active: false
+  Flags: Visible=false
+APP: admin.invoices
+  ID: invoices
+  Route: /admin/invoices
+  Icon: Receipt
+  Type: link
+  Component: N/A
+  Section: menu.sections.sales
+  Order: 30
+  Active: true
+  Flags: Visible=true
+APP: admin.locations.title
+  ID: locations
+  Route: /admin/locations
+  Icon: MapPin
+  Type: link
+  Component: N/A
+  Section: menu.sections.logistics
+  Order: 20
+  Active: true
+  Flags: Visible=true
+APP: admin.menuVariants
+  ID: d3f9e0a1-2b3c-4d5e-6f7a-8b9c0d1e2f3a
+  Route: /admin/users-cockpit/variants
+  Icon: LayoutTemplate
+  Type: link
+  Component: N/A
+  Section: menu.sections.system
+  Order: 80
+  Active: true
+  Flags: Visible=true
+APP: admin.migration.title
+  ID: migration
+  Route: /admin/migration
+  Icon: Database
+  Type: link
+  Component: N/A
+  Section: menu.sections.system
+  Order: 70
+  Active: true
+  Flags: Visible=true
+APP: admin.orders
+  ID: orders
+  Route: /admin/orders
+  Icon: ShoppingBag
+  Type: link
+  Component: N/A
+  Section: menu.sections.sales
+  Order: 20
+  Active: true
+  Flags: Visible=true
+APP: admin.planning.calendarList
+  ID: planning_calendar_list
+  Route: /admin/calendar-list
+  Icon: ListChecks
+  Type: link
+  Component: N/A
+  Section: menu.sections.planning
+  Order: 40
+  Active: true
+  Flags: Visible=true
+APP: admin.planning.calendarVisual
+  ID: planning_calendar_visual
+  Route: /admin/calendar-visual
+  Icon: Calendar
+  Type: link
+  Component: N/A
+  Section: menu.sections.planning
+  Order: 30
+  Active: true
+  Flags: Visible=true
+APP: admin.planning.dayTemplates
+  ID: f1e2d3c4-b5a6-9876-5432-10fedcba9876
+  Route: /admin/templates
+  Icon: List
+  Type: link
+  Component: TemplatesContent
+  Section: menu.sections.planning
+  Order: 50
+  Active: true
+  Flags: Visible=true
+APP: admin.planning.gantt
+  ID: planning_gantt
+  Route: /admin/gantt
+  Icon: BarChartHorizontal
+  Type: link
+  Component: N/A
+  Section: menu.sections.planning
+  Order: 20
+  Active: true
+  Flags: Visible=true
+APP: admin.planning.title
+  ID: planning
+  Route: /admin/planning
+  Icon: CalendarRange
+  Type: link
+  Component: N/A
+  Section: menu.sections.planning
+  Order: 50
+  Active: true
+  Flags: Visible=true
+APP: admin.pricing
+  ID: pricing
+  Route: /admin/pricing
+  Icon: Settings
+  Type: link
+  Component: N/A
+  Section: menu.sections.sales
+  Order: 40
+  Active: true
+  Flags: Visible=true
+APP: admin.reservations
+  ID: reservations
+  Route: /admin/reservations
+  Icon: Ticket
+  Type: link
+  Component: N/A
+  Section: menu.sections.sales
+  Order: 10
+  Active: true
+  Flags: Visible=true
+APP: admin.roles
+  ID: roles
+  Route: /admin/roles
+  Icon: ShieldCheck
+  Type: link
+  Component: N/A
+  Section: menu.sections.system
+  Order: 20
+  Active: true
+  Flags: Visible=true
+APP: admin.routes.title
+  ID: routes
+  Route: /admin/routes
+  Icon: Navigation
+  Type: link
+  Component: admin.routes
+  Section: menu.sections.logistics
+  Order: 10
+  Active: true
+  Flags: Visible=true
+APP: admin.sales.totalBookings
+  ID: sales_bookings_widget
+  Route: #
+  Icon: ShoppingCart
+  Type: widget
+  Component: sales_bookings_chart
+  Section: menu.sections.sales
+  Order: 60
+  Active: true
+  Flags: Visible=true
+APP: admin.sales.totalRevenue
+  ID: sales_revenue_widget
+  Route: #
+  Icon: TrendingUp
+  Type: widget
+  Component: sales_revenue_chart
+  Section: menu.sections.sales
+  Order: 70
+  Active: true
+  Flags: Visible=true
+APP: admin.services.fleetTitle
+  ID: app_ferries
+  Route: /admin/ferries
+  Icon: Ship
+  Type: link
+  Component: N/A
+  Section: menu.sections.logistics
+  Order: 30
+  Active: true
+  Flags: Visible=true
+APP: admin.sessions
+  ID: sessions
+  Route: /admin/sessions
+  Icon: Activity
+  Type: link
+  Component: N/A
+  Section: menu.sections.system
+  Order: 30
+  Active: true
+  Flags: Visible=true
+APP: admin.settings
+  ID: settings
+  Route: /admin/settings
+  Icon: Settings
+  Type: link
+  Component: N/A
+  Section: menu.sections.system
+  Order: 40
+  Active: true
+  Flags: Visible=true
+APP: admin.trips.title
+  ID: 28f9234f-d1db-4ba0-b7a4-1817a1ac93e0
+  Route: /admin/trips
+  Icon: Ship
+  Type: link
+  Component: TripsContent
+  Section: menu.sections.planning
+  Order: 10
+  Active: true
+  Flags: Visible=true
+APP: admin.users.title
+  ID: users
+  Route: /admin/users
+  Icon: Users
+  Type: link
+  Component: N/A
+  Section: menu.sections.system
+  Order: 10
+  Active: true
+  Flags: Visible=true
+APP: Tour Guides
+  ID: app_tour_guides
+  Route: #
+  Icon: UserCog
+  Type: link
+  Component: N/A
+  Section: menu.sections.logistics
+  Order: 60
+  Active: true
+  Flags: Visible=true
+APP: Transfers
+  ID: app_transfers
+  Route: #
+  Icon: Truck
+  Type: link
+  Component: N/A
+  Section: menu.sections.logistics
+  Order: 50
+  Active: true
+  Flags: Visible=true
+
+--- COCKPITS (Dashboards) ---
+[b1d7d8e8-9e1e-4b1e-8e1e-1e1e1e1e1e1e] admin.cockpits (Active: false)
+[821276c7-9bc3-4292-9139-a24094d515a7] admin.cockpit.custom.test_cockpit (Active: false)
+[e4d7d8e8-9e1e-4b1e-8e1e-1e1e1e1e1e1e] admin.cockpit.system (Active: false)
+[c2d7d8e8-9e1e-4b1e-8e1e-1e1e1e1e1e1e] admin.cockpit.operational (Active: false)
+[1c61f46f-fcd3-41f9-919c-be956ea28ee4] admin.cockpit.additional_services (Active: false)
+[c2e8d9f0-1a2b-3c4d-5e6f-7a8b9c0d1e2f] admin.cockpit.users (Active: false)
+[d3d7d8e8-9e1e-4b1e-8e1e-1e1e1e1e1e1e] admin.cockpit.management (Active: false)
+[2e2e2e2e-2e2e-2e2e-2e2e-2e2e2e2e2e2e] admin.cockpit.settings (Active: false)
+[79fe8ca1-294f-4879-ad02-8d0fa99cf05b] admin.cockpit.sales (Active: true)
+[69d0a5ce-b21a-42cd-88ca-cd07b2c73958] admin.cockpit.fleet (Active: true)

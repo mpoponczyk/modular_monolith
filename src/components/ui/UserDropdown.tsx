@@ -6,23 +6,41 @@ import { ThemeSwitcher } from './ThemeSwitcher';
 import { signOutAction } from '@/app/actions';
 
 interface UserDropdownProps {
-    email: string;
+    user: {
+        email?: string;
+        full_name?: string;
+    };
     initialTheme: string;
 }
 
-export function UserDropdown({ email, initialTheme }: UserDropdownProps) {
+export function UserDropdown({ user, initialTheme }: UserDropdownProps) {
     const [isOpen, setIsOpen] = useState(false);
+
+    const displayName = user.full_name || user.email || 'User';
+
+    // Extract initials
+    let initials = 'U';
+    if (user.full_name) {
+        const parts = user.full_name.trim().split(/\s+/);
+        if (parts.length > 1) {
+            initials = `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+        } else {
+            initials = parts[0].substring(0, 2).toUpperCase();
+        }
+    } else if (user.email) {
+        initials = user.email.substring(0, 2).toUpperCase();
+    }
 
     return (
         <div className="relative">
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center gap-2 hover:bg-sidebar-accent text-sidebar-foreground px-3 py-1.5 rounded-lg transition-colors border border-transparent hover:border-sidebar-border"
+                className="flex items-center gap-2 hover:bg-blue-900/50 text-white px-3 py-1.5 rounded-lg transition-colors border border-transparent hover:border-blue-800"
             >
-                <div className="w-8 h-8 rounded-full bg-sidebar-primary flex items-center justify-center text-sidebar-primary-foreground font-bold border-2 border-sidebar-accent">
-                    {email[0].toUpperCase()}
+                <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold border-2 border-blue-400">
+                    {initials}
                 </div>
-                <span className="text-sm font-medium hidden md:block">{email}</span>
+                <span className="text-sm font-medium hidden md:block">{displayName}</span>
                 <ChevronDown size={16} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
             </button>
 
@@ -40,9 +58,12 @@ export function UserDropdown({ email, initialTheme }: UserDropdownProps) {
                         {/* 1. User Info (Read Only) */}
                         <div className="pb-3 border-b border-sidebar-border">
                             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Signed in as</p>
-                            <p className="font-medium truncate" title={email}>
-                                {email}
+                            <p className="font-medium truncate text-foreground" title={displayName}>
+                                {displayName}
                             </p>
+                            {user.full_name && user.email && (
+                                <p className="text-xs text-muted-foreground truncate" title={user.email}>{user.email}</p>
+                            )}
                         </div>
 
                         {/* 2. Theme Switcher */}

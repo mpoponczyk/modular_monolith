@@ -10,9 +10,10 @@ interface LegacyHeaderProps {
         id?: string;
     } | null;
     initialTheme: string;
+    initialLocale: string;
 }
 
-export function LegacyHeader({ user, initialTheme }: LegacyHeaderProps) {
+export function LegacyHeader({ user, initialTheme, initialLocale }: LegacyHeaderProps) {
     return (
         <header className="h-12 bg-sidebar border-b border-sidebar-border text-sidebar-foreground flex items-center px-4 shadow-md z-50 sticky top-0 font-sans transition-colors duration-300">
             <div className="flex items-center gap-2">
@@ -26,11 +27,11 @@ export function LegacyHeader({ user, initialTheme }: LegacyHeaderProps) {
             </div>
 
             <nav className="ml-auto flex items-center gap-4">
-                <LanguageSwitcher />
+                <LanguageSwitcher initialLocale={initialLocale} />
                 {user && (
                     <>
                         <UserDropdown
-                            email={user.email || 'User'}
+                            user={user}
                             initialTheme={initialTheme}
                         />
                         <form action={signOutAction}>

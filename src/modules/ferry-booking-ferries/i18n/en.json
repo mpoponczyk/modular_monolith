@@ -1,0 +1,24 @@
+{
+    "title": "Fleet Management",
+    "subtitle": "Manage ships and their capacities",
+    "totalShips": "Total Ships",
+    "table": {
+        "name": "Ship Name",
+        "passengerCap": "Passengers",
+        "carCap": "Cars",
+        "actions": "Actions",
+        "noShips": "No ships found. Add one.",
+        "manageZones": "Edit Ship"
+    },
+    "addFerry": "Add Ferry",
+    "newFerry": "New Ferry",
+    "form": {
+        "name": "Name",
+        "add": "Add Ship",
+        "edit": "Save Changes"
+    },
+    "active": "Active",
+    "inactive": "Inactive",
+    "delete": "Delete",
+    "confirmDelete": "Are you sure you want to delete this?"
+}

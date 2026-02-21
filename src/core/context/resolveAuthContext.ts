@@ -1,9 +1,8 @@
 // mateusz poponczyk
 import { getUser } from '@/core/auth/getUser';
-import { getSession } from '@/core/auth/getSession';
 import { getUserContext } from './getUserContext';
 import { getTenantContext } from './getTenantContext';
-import { UserContext, TenantContext } from '@/core/types';
+import { UserContext, TenantContext, Tenant } from '@/core/types';
 import { User } from '@supabase/supabase-js';
 import { cache } from 'react';
 import { SupabaseTenantRepository } from '@/infra/repositories/SupabaseTenantRepository';
@@ -13,15 +12,24 @@ export interface AuthContext {
     user: User;
     userContext: UserContext;
     tenantContext: TenantContext;
+    tenant: Tenant; // Optionally expose tenant if needed downstream
 }
 
-export const resolveAuthContext = cache(async (tenantSlug?: string): Promise<AuthContext | null> => {
-    // 1. Single Auth Call
-    const session = await getSession();
-    if (!session) return null;
+const resolveTenantCached = cache(async (userId: string, candidateSlug?: string) => {
+    const tenantRepo = new SupabaseTenantRepository();
+    return await tenantRepo.resolveTenantForUser(userId, candidateSlug);
+});
 
+export const resolveAuthContext = cache(async (tenantSlug?: string): Promise<AuthContext | null> => {
+    const start = performance.now();
+    // 1. Single Auth Call - Prefer getUser for stricter server-side validation
     const user = await getUser();
-    if (!user) return null;
+    if (!user) {
+        console.log('[resolveAuthContext] getUser() returned null/undefined');
+        // Silent return for unauthenticated - caller handles redirect
+        return null;
+    }
+    // console.log(`[resolveAuthContext] User: ${user.id}`);
 
     // 2. Resolve Tenant Logic (Precedence: Slug > Header > Cookie > Implicit)
     let candidateSlug: string | undefined = tenantSlug;
@@ -38,29 +46,42 @@ export const resolveAuthContext = cache(async (tenantSlug?: string): Promise<Aut
         candidateSlug = cookieStore.get('tenant_slug')?.value;
     }
 
-    const tenantRepo = new SupabaseTenantRepository();
-    // Pass candidateSlug (or undefined for implicit check)
-    // Implicit Check is handled inside resolveTenantForUser if slug is undefined.
-    const tenant = await tenantRepo.resolveTenantForUser(user.id, candidateSlug);
+    // Use globally cached resolver
+    const tenant = await resolveTenantCached(user.id, candidateSlug);
 
     if (!tenant) {
-        // strict fail-closed
-        // If we couldn't resolve a tenant, we cannot provide AuthContext.
-        // It is up to the caller (Layout/Page) to handle null -> Redirect/Error/SelectTenant.
+        console.log(`[resolveAuthContext] resolveTenantForUser returned null. User: ${user.id}, Slug: ${candidateSlug}`);
+        if (candidateSlug) {
+            // Only log error if we explicitly tried to find a specific slug and failed
+            console.error(`[resolveAuthContext] Failed to resolve Tenant. Slug: ${candidateSlug}, User: ${user.id}`);
+        }
+        // If implicit (undefined slug) and found nothing/ambiguous, strictly return null.
         return null;
     }
 
-    // 3. Resolve Contexts using the fetched user AND tenant
-    const userContext = await getUserContext(user, tenant.id);
-    const tenantContext = await getTenantContext(user, tenant);
+    // 3. Resolve Contexts using primitives
+    const tStart = performance.now();
+    const [userContext, tenantContext] = await Promise.all([
+        getUserContext(user.id, tenant.id),
+        getTenantContext(tenant.id, tenant.slug)
+    ]);
+    console.log(`[Perf] resolveAuthContext (Contexts primitive cache): ${(performance.now() - tStart).toFixed(2)}ms`);
 
-    if (!userContext || !tenantContext) {
+    if (!userContext) {
+        console.error(`[resolveAuthContext] Failed to resolve UserContext for ${user.id} in ${tenant.id}`);
         return null;
     }
+    if (!tenantContext) {
+        console.error(`[resolveAuthContext] Failed to resolve TenantContext for ${tenant.id}`);
+        return null;
+    }
+
+    console.log(`[Perf] resolveAuthContext (Total): ${(performance.now() - start).toFixed(2)}ms`);
 
     return {
         user,
         userContext,
-        tenantContext
+        tenantContext,
+        tenant
     };
 });

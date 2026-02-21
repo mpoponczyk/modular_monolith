@@ -1,0 +1,29 @@
+{
+    "admin": {
+        "ordersPage": {
+            "title": "Zamówienia",
+            "manageOrders": "Zarządzaj zamówieniami i fakturami",
+            "table": {
+                "date": "Data",
+                "orderId": "ID Zamówienia",
+                "customer": "Klient",
+                "items": "Pozycje",
+                "status": "Zarządzaj",
+                "totalAmount": "Kwota",
+                "actions": "Akcje",
+                "noOrders": "Nie znaleziono zamówień.",
+                "pax": "Pax",
+                "manage": "Zarządzaj",
+                "reservationsInOrder": "Rezerwacje w zamówieniu",
+                "actions_label": {
+                    "downloadInvoice": "Pobierz Fakturę",
+                    "viewDetails": "Szczegóły",
+                    "cancelOrder": "Anuluj Zamówienie"
+                }
+            }
+        }
+    },
+    "common": {
+        "loading": "Ładowanie..."
+    }
+}

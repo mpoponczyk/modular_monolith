@@ -1,0 +1,23 @@
+{
+    "services": {
+        "title": "Services",
+        "subtitle": "Manage Additional Services",
+        "editService": "Edit Service",
+        "newService": "New Service",
+        "serviceFormDescription": "Configure the additional service details and availability status.",
+        "noDescription": "No description provided",
+        "form": {
+            "name": "Service Name",
+            "description": "Service Description"
+        }
+    },
+    "common": {
+        "active": "Active",
+        "inactive": "Inactive",
+        "cancel": "Cancel",
+        "save": "Save",
+        "delete": "Delete",
+        "confirmDelete": "Are you sure you want to delete this?",
+        "loading": "Loading..."
+    }
+}
